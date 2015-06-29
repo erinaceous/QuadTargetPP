@@ -10,5 +10,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CURRENT_SOURCE_DIR src)
 
 set(SOURCE_FILES src/main.cpp)
-add_executable(QuadTarget ${SOURCE_FILES} src/TargetModel.cpp src/TargetModel.h src/TargetModel.cpp src/TargetModel.h src/TargetFinder.cpp src/TargetFinder.h)
+add_executable(QuadTarget ${SOURCE_FILES} src/TargetFinder.cpp src/TargetFinder.h)
 target_link_libraries( QuadTarget ${OpenCV_LIBS} )
