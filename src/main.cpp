@@ -19,7 +19,12 @@ using namespace cv;
 
 int main() {
     boost::property_tree::ptree pt;
-    boost::property_tree::ini_parser::read_ini("config.ini", pt);
+    char* config_path = getenv("QUADTARGET_CONFIG");
+    if(config_path == NULL) {
+        boost::property_tree::ini_parser::read_ini("config.ini", pt);
+    } else {
+        boost::property_tree::ini_parser::read_ini(config_path, pt);
+    }
 
     bool headless = pt.get<bool>("gui.headless");
     bool saveTmp = pt.get<bool>("gui.saveTmp");
