@@ -10,18 +10,29 @@
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include "TargetModel.h"
 #include "TargetFinder.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
 using namespace std;
 using namespace cv;
 
 int main() {
-    VideoCapture cap(0);
+    boost::property_tree::ptree pt;
+    boost::property_tree::ini_parser::read_ini("config.ini", pt);
+
+    bool headless = pt.get<bool>("gui.headless");
+    bool saveTmp = pt.get<bool>("gui.saveTmp");
+    bool saveToFiles = pt.get<bool>("gui.saveToFiles");
+
+    VideoCapture cap(pt.get<int>("camera.index"));
     if(!cap.isOpened()) {
         cerr << "Couldn't open webcam" << endl;
         return -1;
     }
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, pt.get<int>("camera.width"));
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, pt.get<int>("camera.height"));
+    cap.set(CV_CAP_PROP_FPS, pt.get<int>("camera.fps"));
 
     TargetFinder tf = TargetFinder();
 
@@ -40,11 +51,19 @@ int main() {
                 cout << "frame=" << count << ",t=" << i << ",";
                 cout << ft.at(i).toString() << endl;
             }
-            #ifndef DEBUG_EXTREME
+            if(!headless) {
                 imshow("input", frame);
                 imshow("processed", processed);
                 imshow("output", output);
-            #endif
+            }
+            if(saveTmp) {
+                imwrite("/tmp/target.png", frame);
+            }
+            if(saveToFiles) {
+                imwrite("input.jpg", frame);
+                imwrite("processed.jpg", processed);
+                imwrite("output.jpg", output);
+            }
             count++;
         } else {
             DEBUGPRINT("couldn't get webcam frame?");
