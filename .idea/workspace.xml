@@ -12,12 +12,7 @@
     </ADDITIONAL_GENERATION_ENVIRONMENT>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="732ccd56-31ff-481f-a3f9-2631a1896955" name="Default" comment="More efficient pixel access. Slight">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CMakeLists.txt" afterPath="$PROJECT_DIR$/CMakeLists.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TargetFinder.cpp" afterPath="$PROJECT_DIR$/src/TargetFinder.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TargetFinder.h" afterPath="$PROJECT_DIR$/src/TargetFinder.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.ini" afterPath="$PROJECT_DIR$/config.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main.cpp" afterPath="$PROJECT_DIR$/src/main.cpp" />
+    <list default="true" id="732ccd56-31ff-481f-a3f9-2631a1896955" name="Default" comment="More efficient pixel access. Slightly more working code.">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="QuadTarget++.iws" />
@@ -45,10 +40,9 @@
             <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
               <provider selected="true" editor-type-id="text-editor">
                 <state vertical-scroll-proportion="0.33277026">
-                  <caret line="612" column="9" selection-start-line="612" selection-start-column="9" selection-end-line="612" selection-end-column="9" />
+                  <caret line="610" column="9" selection-start-line="610" selection-start-column="9" selection-end-line="610" selection-end-column="9" />
                   <folding>
-                    <element signature="e#40#65#0" expanded="true" />
-                    <element signature="e#29317#29724#0" expanded="true" />
+                    <element signature="e#29269#29676#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -329,7 +323,13 @@
       <option name="project" value="LOCAL" />
       <updated>1435586654779</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="More efficient pixel access. Slightly more working code.">
+      <created>1435656772577</created>
+      <option name="number" value="00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1435656772577</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -368,11 +368,13 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
     <MESSAGE value="Fully implemented Neal's algorithm --- doesn't seem to be working at all, but is at least processing webcam frames quickly. As far as I can tell." />
     <MESSAGE value="Added config file parsing, some more debug functionality." />
     <MESSAGE value="Using environment variable to find config file now -- useful on RPi install" />
     <MESSAGE value="Removed TargetModel classes from build (they're not used so why compile them)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed TargetModel classes from build (they're not used so why compile them)" />
+    <MESSAGE value="More efficient pixel access. Slightly more working code." />
+    <option name="LAST_COMMIT_MESSAGE" value="More efficient pixel access. Slightly more working code." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -395,8 +397,7 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="337" column="44" selection-start-line="337" selection-start-column="39" selection-end-line="337" selection-end-column="44" />
           <folding>
-            <element signature="e#40#65#0" expanded="true" />
-            <element signature="e#29317#29724#0" expanded="true" />
+            <element signature="e#29269#29676#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -455,8 +456,7 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="742" column="30" selection-start-line="742" selection-start-column="30" selection-end-line="742" selection-end-column="30" />
           <folding>
-            <element signature="e#40#65#0" expanded="true" />
-            <element signature="e#29317#29724#0" expanded="true" />
+            <element signature="e#29269#29676#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -571,10 +571,9 @@
     <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.33277026">
-          <caret line="612" column="9" selection-start-line="612" selection-start-column="9" selection-end-line="612" selection-end-column="9" />
+          <caret line="610" column="9" selection-start-line="610" selection-start-column="9" selection-end-line="610" selection-end-column="9" />
           <folding>
-            <element signature="e#40#65#0" expanded="true" />
-            <element signature="e#29317#29724#0" expanded="true" />
+            <element signature="e#29269#29676#0" expanded="true" />
           </folding>
         </state>
       </provider>
