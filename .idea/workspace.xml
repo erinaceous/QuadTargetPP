@@ -12,11 +12,9 @@
     </ADDITIONAL_GENERATION_ENVIRONMENT>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="732ccd56-31ff-481f-a3f9-2631a1896955" name="Default" comment="Can change">
+    <list default="true" id="732ccd56-31ff-481f-a3f9-2631a1896955" name="Default" comment="Can change algorithm params via config file now.">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TargetFinder.cpp" afterPath="$PROJECT_DIR$/src/TargetFinder.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TargetFinder.h" afterPath="$PROJECT_DIR$/src/TargetFinder.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.ini" afterPath="$PROJECT_DIR$/config.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main.cpp" afterPath="$PROJECT_DIR$/src/main.cpp" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="QuadTarget++.iws" />
@@ -43,10 +41,10 @@
           <file leaf-file-name="TargetFinder.cpp" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.58474576">
-                  <caret line="534" column="5" selection-start-line="534" selection-start-column="5" selection-end-line="534" selection-end-column="5" />
+                <state vertical-scroll-proportion="-0.9433749">
+                  <caret line="813" column="5" selection-start-line="813" selection-start-column="5" selection-end-line="813" selection-end-column="5" />
                   <folding>
-                    <element signature="e#29002#29409#0" expanded="true" />
+                    <element signature="e#33583#33990#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -71,8 +69,8 @@
               <file leaf-file-name="config.ini" pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/config.ini">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state vertical-scroll-proportion="0.1994135">
-                      <caret line="4" column="8" selection-start-line="4" selection-start-column="8" selection-end-line="4" selection-end-column="8" />
+                    <state vertical-scroll-proportion="0.2521994">
+                      <caret line="12" column="22" selection-start-line="12" selection-start-column="22" selection-end-line="12" selection-end-column="22" />
                       <folding />
                     </state>
                   </provider>
@@ -95,8 +93,8 @@
               <file leaf-file-name="TargetFinder.h" pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/src/TargetFinder.h">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state vertical-scroll-proportion="0.12301587">
-                      <caret line="23" column="77" selection-start-line="23" selection-start-column="77" selection-end-line="23" selection-end-column="77" />
+                    <state vertical-scroll-proportion="0.26984128">
+                      <caret line="8" column="2" selection-start-line="8" selection-start-column="2" selection-end-line="8" selection-end-column="2" />
                       <folding>
                         <element signature="e#213#307#0" expanded="true" />
                       </folding>
@@ -127,9 +125,9 @@
         <option value="$PROJECT_DIR$/src/TargetModel.cpp" />
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/src/main.cpp" />
-        <option value="$PROJECT_DIR$/src/TargetFinder.cpp" />
         <option value="$PROJECT_DIR$/config.ini" />
         <option value="$PROJECT_DIR$/src/TargetFinder.h" />
+        <option value="$PROJECT_DIR$/src/TargetFinder.cpp" />
       </list>
     </option>
   </component>
@@ -339,7 +337,13 @@
       <option name="project" value="LOCAL" />
       <updated>1435656780215</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Can change algorithm params via config file now.">
+      <created>1435660179355</created>
+      <option name="number" value="00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1435660179355</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -384,7 +388,8 @@
     <MESSAGE value="Using environment variable to find config file now -- useful on RPi install" />
     <MESSAGE value="Removed TargetModel classes from build (they're not used so why compile them)" />
     <MESSAGE value="More efficient pixel access. Slightly more working code." />
-    <option name="LAST_COMMIT_MESSAGE" value="More efficient pixel access. Slightly more working code." />
+    <MESSAGE value="Can change algorithm params via config file now." />
+    <option name="LAST_COMMIT_MESSAGE" value="Can change algorithm params via config file now." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -407,7 +412,7 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="337" column="44" selection-start-line="337" selection-start-column="39" selection-end-line="337" selection-end-column="44" />
           <folding>
-            <element signature="e#29002#29409#0" expanded="true" />
+            <element signature="e#33583#33990#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -466,7 +471,7 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="742" column="30" selection-start-line="742" selection-start-column="30" selection-end-line="742" selection-end-column="30" />
           <folding>
-            <element signature="e#29002#29409#0" expanded="true" />
+            <element signature="e#33583#33990#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -568,30 +573,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.58474576">
-          <caret line="534" column="5" selection-start-line="534" selection-start-column="5" selection-end-line="534" selection-end-column="5" />
-          <folding>
-            <element signature="e#29002#29409#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/config.ini">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.1994135">
-          <caret line="4" column="8" selection-start-line="4" selection-start-column="8" selection-end-line="4" selection-end-column="8" />
+        <state vertical-scroll-proportion="0.2521994">
+          <caret line="12" column="22" selection-start-line="12" selection-start-column="22" selection-end-line="12" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TargetFinder.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.12301587">
-          <caret line="23" column="77" selection-start-line="23" selection-start-column="77" selection-end-line="23" selection-end-column="77" />
+        <state vertical-scroll-proportion="0.26984128">
+          <caret line="8" column="2" selection-start-line="8" selection-start-column="2" selection-end-line="8" selection-end-column="2" />
           <folding>
             <element signature="e#213#307#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.9433749">
+          <caret line="813" column="5" selection-start-line="813" selection-start-column="5" selection-end-line="813" selection-end-column="5" />
+          <folding>
+            <element signature="e#33583#33990#0" expanded="true" />
           </folding>
         </state>
       </provider>

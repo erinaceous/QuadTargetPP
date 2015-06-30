@@ -296,7 +296,7 @@ TargetFinder::TargetFinder(bool headless) {
 }
 
 
-bool TargetFinder::check_sequence(int w, int h) {
+/* bool TargetFinder::check_sequence(int w, int h) {
     if(this->left_white == 0 || this->right_white == 0
        || this->right_black == 0 || this->left_black == 0) {
         return false;
@@ -312,9 +312,9 @@ bool TargetFinder::check_sequence(int w, int h) {
         double erosion = (this->left_erosion + this->right_erosion) / 2;
 
         double left_black_erosion_sq = this->left_black + (this->left_erosion * 2);
-        double left_white_erosion_sq = this->left_white + (this->left_erosion * 2);
+        double left_white_erosion_sq = this->left_white - (this->left_erosion * 2);
         double right_black_erosion_sq = this->right_black + (this->right_erosion * 2);
-        double right_white_erosion_sq = this->right_white + (this->right_erosion * 2);
+        double right_white_erosion_sq = this->right_white - (this->right_erosion * 2);
         double center_black_erosion_sq = this->center_black + this->left_erosion + this->right_erosion;
         double center_white_erosion_sq = this->center_white + this->left_erosion + this->right_erosion;
 
@@ -322,10 +322,11 @@ bool TargetFinder::check_sequence(int w, int h) {
             left_black_erosion_sq / right_black_erosion_sq;
         double left_white_ratio_adjusted = (double)
             left_white_erosion_sq / right_white_erosion_sq;
-        double left_black_ratio = (double) (this->left_black / this->right_black);
-        double left_white_ratio = (double) (this->left_white / this->right_white);
+        double left_black_ratio = (double) this->left_black / (double) this->right_black;
+        double left_white_ratio = (double) this->left_white / (double) this->right_white;
 
-        double pair_ratio_frac = 1 / PAIR_CENTER_RATIO_THRESHOLD;
+        double pair_center_ratio_frac = 1 / PAIR_CENTER_RATIO_THRESHOLD;
+        double pair_ratio_frac = 1 / LR_PAIR_RATIO_THRESHOLD;
         double pair_frac = 1 / LR_RATIO_THRESHOLD;
         if(lr_pair_ratio > LR_PAIR_RATIO_THRESHOLD
             && lr_pair_ratio < pair_ratio_frac
@@ -345,16 +346,16 @@ bool TargetFinder::check_sequence(int w, int h) {
                 (double) (right_black_erosion_sq * 3) / (center_black_erosion_sq)
             );
 
-            double ratio_left_pair_center = (left_pair * 1.5) / ((double) this->center_black + erosion * 2);
-            double ratio_right_pair_center = (right_pair * 1.5) / ((double) this->center_black + erosion * 2);
+            double ratio_left_pair_center = ((double) left_pair * 1.5) / ((double) this->center_black + erosion * 2);
+            double ratio_right_pair_center = ((double) right_pair * 1.5) / ((double) this->center_black + erosion * 2);
 
             double lr_black_center_frac = 1 / LR_BLACK_TO_CENTER_RATIO_THRESHOLD;
 
             if(
                 ratio_left_pair_center > PAIR_CENTER_RATIO_THRESHOLD
-                && ratio_left_pair_center < pair_ratio_frac
+                && ratio_left_pair_center < pair_center_ratio_frac
                 && ratio_right_pair_center > PAIR_CENTER_RATIO_THRESHOLD
-                && ratio_right_pair_center < pair_ratio_frac
+                && ratio_right_pair_center < pair_center_ratio_frac
                 && ratio_left_black_center > LR_BLACK_TO_CENTER_RATIO_THRESHOLD
                 && ratio_left_black_center < lr_black_center_frac
                 && ratio_right_black_center > LR_BLACK_TO_CENTER_RATIO_THRESHOLD
@@ -367,6 +368,72 @@ bool TargetFinder::check_sequence(int w, int h) {
             }
         }
     }
+    return false;
+} */
+
+
+bool TargetFinder::check_sequence(int w, int h) {
+    if (this->left_white == 0 ||
+        this->right_white == 0 ||
+        this->right_black == 0 ||
+        this->left_black == 0) {
+        return false;
+    }
+
+    if (this->center_black != 0){
+        DEBUGPRINT("checkSequence truth");
+        double leftPair = this->left_black+this->left_white;
+        double rightPair = this->right_black+this->right_white;
+
+        double LRPairRatio = (double)leftPair/rightPair;
+        this->left_erosion = (int)((((leftPair/2)-this->left_black)/2));
+        this->right_erosion = (int)((((rightPair/2)-this->right_black)/2));
+        double erosion = (this->left_erosion+this->right_erosion)/2; //average reduction in apparent width of target
+
+        double LBlackRatioAdjusted = (double)(this->left_black+this->left_erosion+this->left_erosion)/(this->right_black+this->right_erosion+this->right_erosion);
+        double LWhiteRatioAdjusted = (double)(this->left_white-this->left_erosion-this->left_erosion)/(this->right_white-this->right_erosion-this->right_erosion);
+        double LBlackRatio = (double)(this->left_black)/(this->right_black);
+        double LWhiteRatio = (double)(this->left_white)/(this->right_white);
+
+        // are the left and right pairs similar dimensions?
+        if
+                ( LRPairRatio > LR_PAIR_RATIO_THRESHOLD && LRPairRatio < (1/LR_PAIR_RATIO_THRESHOLD)
+                  && LBlackRatioAdjusted > LR_PAIR_RATIO_THRESHOLD && LBlackRatioAdjusted < (1/LR_PAIR_RATIO_THRESHOLD)
+                  && LWhiteRatioAdjusted > LR_PAIR_RATIO_THRESHOLD && LWhiteRatioAdjusted < (1/LR_PAIR_RATIO_THRESHOLD)
+                  && LBlackRatio > LR_RATIO_THRESHOLD && LBlackRatio < (1/LR_RATIO_THRESHOLD)
+                  && LWhiteRatio > LR_RATIO_THRESHOLD && LWhiteRatio < (1/LR_RATIO_THRESHOLD)
+                ){
+            DEBUGPRINT("checkSequence inner truth");
+            // is the center the correct ratio 3:1 center to black ring
+            double ratioLeftBlackToCenter = ((double)(this->left_black+this->left_erosion+this->left_erosion)*3)/(this->center_black+this->left_erosion+this->right_erosion);
+            double ratioRightBlackToCenter = ((double)(this->right_black+this->right_erosion+this->right_erosion))*3/(this->center_black+this->left_erosion+this->right_erosion);
+
+            // pair is 2 bands wide and center is 3 so expected size of center is pair*1.5
+            double ratioLeftPairToCenter = ((double)leftPair*1.5)/((double)this->center_black+erosion*2);
+            double ratioRightPairToCenter = ((double)rightPair*1.5)/((double)this->center_black+erosion*2);
+
+            if (       ratioLeftPairToCenter > PAIR_CENTER_RATIO_THRESHOLD
+                       && ratioLeftPairToCenter < (1/PAIR_CENTER_RATIO_THRESHOLD)
+                       && ratioRightPairToCenter > PAIR_CENTER_RATIO_THRESHOLD
+                       && ratioRightPairToCenter < (1/PAIR_CENTER_RATIO_THRESHOLD)
+
+                       && ratioLeftBlackToCenter > LR_BLACK_TO_CENTER_RATIO_THRESHOLD
+                       && ratioLeftBlackToCenter < (1/LR_BLACK_TO_CENTER_RATIO_THRESHOLD)
+                       && ratioRightBlackToCenter > LR_BLACK_TO_CENTER_RATIO_THRESHOLD
+                       && ratioRightBlackToCenter < (1/LR_BLACK_TO_CENTER_RATIO_THRESHOLD)
+                       // don't allow more erosion componsation than visible rings
+                       && this->left_erosion < this->left_black
+                       && this->right_erosion < this->right_black
+                    ){
+                //System.out.println("Found pattern at "+w+" "+h);
+                //System.out.println("Left E:"+this->left_erosion+"   Right E:"+this->right_erosion);
+
+                DEBUGPRINT("checkSequence inner inner truth");
+                return true;
+            }
+        }
+    }
+
     return false;
 }
 
@@ -384,6 +451,10 @@ bool TargetFinder::check_vertical_sequence(
     /* set_pixel(output_mat, h, w, 0, 0);
     set_pixel(output_mat, h, w, 1, 0);
     set_pixel(output_mat, h, w, 2, 255); */
+    uchar* o = output_mat->ptr(h);
+    o[3 * w] = 0;
+    o[3 * w + 1] = 0;
+    o[3 * w + 2] = 255;
 
     uchar* p = input_mat->ptr<uchar>(h);
     uchar pixel = p[w];
@@ -427,7 +498,7 @@ bool TargetFinder::check_vertical_sequence(
         p = input_mat->ptr<uchar>(--h1);
     }
 
-    if(this->check_sequence(w, target_center_edge + this->right_white + this->right_white - 1)) {
+    if(this->check_sequence(w, target_center_edge + this->right_white + this->right_black - 1)) {
         int left_x = w - (this->right_black + this->right_white
                           + this->center_black + this->left_white
                           + this->left_black + this->left_erosion) + 1;
@@ -440,7 +511,6 @@ bool TargetFinder::check_vertical_sequence(
             p1[w] = 0;
             p1[++w] = 0;
             p1[++w] = 255;
-
             DEBUGPRINT("failed on elliptical ratio");
             /* set_pixel(output_mat, h, w, 2, 0);
             set_pixel(output_mat, h, w, 1, 0);
@@ -689,10 +759,13 @@ void TargetFinder::colour_horizontal_target(int w, int h, Mat *mat) {
         for(int i = 1; i <= this->left_erosion; i++) {
             set_pixel(mat, h, left_black_start - i, 2, 128);
             set_pixel(mat, h, left_black_start - i, 1, 0);
+            set_pixel(mat, h, left_black_start - i, 0, 0);
             set_pixel(mat, h, center_start - i, 2, 128);
             set_pixel(mat, h, center_start - i, 1, 0);
+            set_pixel(mat, h, center_start - i, 0, 0);
             set_pixel(mat, h, left_black_end + i, 2, 128);
             set_pixel(mat, h, left_black_end + i, 1, 0);
+            set_pixel(mat, h, left_black_end + i, 0, 0);
             /* p[left_black_start - i + 2] = 128;
             p[left_black_start - i + 1] = 0;
             p[center_start - i + 2] = 128;
@@ -704,10 +777,13 @@ void TargetFinder::colour_horizontal_target(int w, int h, Mat *mat) {
         for(int i = this->left_erosion; i <= -1; i++) {
             set_pixel(mat, h, left_black_start + i, 2, 128);
             set_pixel(mat, h, left_black_start + i, 1, 0);
+            set_pixel(mat, h, left_black_start + i, 0, 0);
             set_pixel(mat, h, center_start + i, 2, 128);
             set_pixel(mat, h, center_start + i, 1, 0);
+            set_pixel(mat, h, center_start + i, 0, 0);
             set_pixel(mat, h, left_black_end - i, 2, 128);
             set_pixel(mat, h, left_black_end - i, 1, 0);
+            set_pixel(mat, h, left_black_end - i, 0, 0);
             /* p[left_black_start + i + 2] = 128;
             p[left_black_start + i + 1] = 0;
             p[center_start + i + 2] = 128;
@@ -721,10 +797,13 @@ void TargetFinder::colour_horizontal_target(int w, int h, Mat *mat) {
         for(int i = 1; i <= this->right_erosion; i++) {
             set_pixel(mat, h, right_black_end - i, 2, 128);
             set_pixel(mat, h, right_black_end - i, 1, 0);
+            set_pixel(mat, h, right_black_end - i, 0, 0);
             set_pixel(mat, h, center_end + i, 2, 128);
             set_pixel(mat, h, center_end + i, 1, 0);
+            set_pixel(mat, h, center_end + i, 0, 0);
             set_pixel(mat, h, right_black_start + i, 2, 128);
             set_pixel(mat, h, right_black_start + i, 1, 0);
+            set_pixel(mat, h, right_black_start + i, 0, 0);
             /* p[right_black_end - i + 2] = 128;
             p[right_black_end - i + 1] = 0;
             p[center_end + i + 2] = 128;
