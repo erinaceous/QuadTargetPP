@@ -3,8 +3,6 @@
 //
 
 #include "TargetFinder.h"
-#include "opencv2/opencv.hpp"
-#include "math.h"
 
 
 using namespace cv;
@@ -123,9 +121,13 @@ int FoundMarker::get_valid_y_count() {
 void FoundMarker::mark_center(Mat *mat) {
     int y = (int) (this->get_center_y() + 0.5);
     int x = (int) (this->get_center_x() + 0.5);
-    set_pixel(mat, y, x, 0, 255);
+    uchar* p = mat->ptr(y);
+    p[x] = 255;
+    p[x + 1] = 0;
+    p[x + 2] = 0;
+    /* set_pixel(mat, y, x, 0, 255);
     set_pixel(mat, y, x, 1, 0);
-    set_pixel(mat, y, x, 2, 255);
+    set_pixel(mat, y, x, 2, 255); */
 }
 
 
@@ -289,8 +291,8 @@ string FoundTarget::toString() {
 }
 
 
-TargetFinder::TargetFinder() {
-
+TargetFinder::TargetFinder(bool headless) {
+    this->headless = headless;
 }
 
 
@@ -383,7 +385,8 @@ bool TargetFinder::check_vertical_sequence(
     set_pixel(output_mat, h, w, 1, 0);
     set_pixel(output_mat, h, w, 2, 255); */
 
-    uchar pixel = get_pixel(input_mat, h, w, 0);
+    uchar* p = input_mat->ptr<uchar>(h);
+    uchar pixel = p[w];
     uchar contrast = (uchar) (255 * this->contrast);
     //uchar black = contrast;
     //uchar white = 255 - contrast;
@@ -394,33 +397,34 @@ bool TargetFinder::check_vertical_sequence(
         return false;
     }
     int h1 = h;
-    while(h1 < height && get_pixel(input_mat, h1, w, 0) == black) {
+    while(h1 < height && p[w] == black) {
         this->center_black++;
         target_center_edge++;
-        h1++;
+        p = input_mat->ptr<uchar>(++h1);
     }
-    while(h1 < height && get_pixel(input_mat, h1, w, 0) == white) {
+    while(h1 < height && p[w] == white) {
         this->right_white++;
-        h1++;
+        p = input_mat->ptr<uchar>(++h1);
     }
-    while(h1 < height && get_pixel(input_mat, h1, w, 0) == black) {
+    while(h1 < height && p[w] == black) {
         this->right_black++;
-        h1++;
+        p = input_mat->ptr<uchar>(++h1);
     }
 
     h1 = h;
+    p = input_mat->ptr<uchar>(h1);
     this->center_black--;
-    while(h1 > 0 && get_pixel(input_mat, h1, w, 0) == black) {
+    while(h1 > 0 && p[w] == black) {
         this->center_black++;
-        h1--;
+        p = input_mat->ptr<uchar>(--h1);
     }
-    while(h1 > 0 && get_pixel(input_mat, h1, w, 0) == white) {
+    while(h1 > 0 && p[w] == white) {
         this->left_white++;
-        h1--;
+        p = input_mat->ptr<uchar>(--h1);
     }
-    while(h1 > 0 && get_pixel(input_mat, h1, w, 0) == black) {
+    while(h1 > 0 && p[w] == black) {
         this->left_black++;
-        h1--;
+        p = input_mat->ptr<uchar>(--h1);
     }
 
     if(this->check_sequence(w, target_center_edge + this->right_white + this->right_white - 1)) {
@@ -432,16 +436,25 @@ bool TargetFinder::check_vertical_sequence(
 
         if(center_horiz_vert_ratio < TargetFinder::CENTER_ELLIPTICAL_RATIO
             || center_horiz_vert_ratio > (1 / TargetFinder::CENTER_ELLIPTICAL_RATIO)) {
+            uchar* p1 = output_mat->ptr(h);
+            p1[w] = 0;
+            p1[++w] = 0;
+            p1[++w] = 255;
+
             DEBUGPRINT("failed on elliptical ratio");
-            set_pixel(output_mat, h, w, 2, 0);
+            /* set_pixel(output_mat, h, w, 2, 0);
             set_pixel(output_mat, h, w, 1, 0);
-            set_pixel(output_mat, h, w, 0, 255);
+            set_pixel(output_mat, h, w, 0, 255);*/
 
             return false;
         }
 
-        this->colour_vertical_target(w, target_center_edge + this->right_white
-                                        + this->right_black - 1, output_mat);
+        if(!this->headless) {
+            this->colour_vertical_target(
+                    w, target_center_edge + this->right_white + this->right_black - 1,
+                    output_mat
+            );
+        }
         return true;
     }
 
@@ -563,30 +576,44 @@ Mat TargetFinder::recognise_target(Mat *input_mat) {
         this->right_black = 0;
 
         int w = 0;
-        uchar current_colour = get_pixel(input_mat, h, w, 0);
+        uchar* p = input_mat->ptr(h);
+        uchar* o = output_mat.ptr(h);
+        uchar current_colour = p[w];
         int current_count = 1;
 
-        while(w < width) {
-            uchar pixel = get_pixel(input_mat, h, w, 0);
+        while(!this->headless && w < width) {
+            uchar pixel = p[w];
+            // uchar pixel = get_pixel(input_mat, h, w, 0);
             if (pixel == 255) {
-                set_pixel(&output_mat, h, w, 0, 255);
+                o[3 * w] = 255;
+                o[3 * w + 1] = 255;
+                o[3 * w + 2] = 255;
+                /* set_pixel(&output_mat, h, w, 0, 255);
                 set_pixel(&output_mat, h, w, 1, 255);
-                set_pixel(&output_mat, h, w, 2, 255);
+                set_pixel(&output_mat, h, w, 2, 255); */
             }
             else if (pixel == 0) {
-                set_pixel(&output_mat, h, w, 0, 0);
+                o[3 * w] = 0;
+                o[3 * w + 1] = 0;
+                o[3 * w + 2] = 0;
+                /* set_pixel(&output_mat, h, w, 0, 0);
                 set_pixel(&output_mat, h, w, 1, 0);
-                set_pixel(&output_mat, h, w, 2, 0);
+                set_pixel(&output_mat, h, w, 2, 0); */
             } else {
-                set_pixel(&output_mat, h, w, 0, 128);
+                o[3 * w] = 128;
+                o[3 * w + 1] = 128;
+                o[3 * w + 2] = 128;
+                /* set_pixel(&output_mat, h, w, 0, 128);
                 set_pixel(&output_mat, h, w, 1, 128);
-                set_pixel(&output_mat, h, w, 2, 128);
+                set_pixel(&output_mat, h, w, 2, 128); */
             }
             w++;
         }
 
+        w = 0;
         while(w < width) {
-            uchar pixel = get_pixel(input_mat, h, w, 0);
+            uchar pixel = p[w];
+            // uchar pixel = get_pixel(input_mat, h, w, 0);
             if(pixel != current_colour) {
                 if(current_colour == 0) {
                     this->left_black = this->left_white;
@@ -604,7 +631,9 @@ Mat TargetFinder::recognise_target(Mat *input_mat) {
                                           + this->left_black + this->left_erosion) + 1;
                         int right_x = w + this->right_erosion;
                         this->update_targets(h, center_start, center_end, left_x, right_x);
-                        this->colour_horizontal_target(w - 1, h, &output_mat);
+                        if(!this->headless) {
+                            this->colour_horizontal_target(w - 1, h, &output_mat);
+                        }
                     }
                 } else {
                     this->left_black = this->left_white;
@@ -623,7 +652,8 @@ Mat TargetFinder::recognise_target(Mat *input_mat) {
         }
     }
 
-    set_pixel(&output_mat, 10, 10, 2, 255);
+    output_mat.ptr(10)[32] = 255;
+    // set_pixel(&output_mat, 10, 10, 2, 255);
 
     return output_mat;
 }
@@ -641,14 +671,18 @@ void TargetFinder::colour_horizontal_target(int w, int h, Mat *mat) {
     int right_black_start = w - (this->right_black) + 1;
     int right_black_end = w;
 
+    // uchar* p = mat->ptr(h);
     for(int i = left_black_start; i <= left_black_end; i++) {
         set_pixel(mat, h, i, 2, 192);
+        // p[i + 2] = 192;
     }
     for(int i = center_start; i <= center_end; i++) {
         set_pixel(mat, h, i, 2, 255);
+        // p[i + 2] = 255;
     }
     for(int i = right_black_start; i <= right_black_end; i++) {
         set_pixel(mat, h, i, 2, 64);
+        // p[i + 2] = 64;
     }
 
     if(this->left_erosion >= 0) {
@@ -659,6 +693,12 @@ void TargetFinder::colour_horizontal_target(int w, int h, Mat *mat) {
             set_pixel(mat, h, center_start - i, 1, 0);
             set_pixel(mat, h, left_black_end + i, 2, 128);
             set_pixel(mat, h, left_black_end + i, 1, 0);
+            /* p[left_black_start - i + 2] = 128;
+            p[left_black_start - i + 1] = 0;
+            p[center_start - i + 2] = 128;
+            p[center_start - i + 1] = 0;
+            p[left_black_end - i + 2] = 128;
+            p[left_black_end - i + 1] = 0; */
         }
     } else {
         for(int i = this->left_erosion; i <= -1; i++) {
@@ -668,6 +708,12 @@ void TargetFinder::colour_horizontal_target(int w, int h, Mat *mat) {
             set_pixel(mat, h, center_start + i, 1, 0);
             set_pixel(mat, h, left_black_end - i, 2, 128);
             set_pixel(mat, h, left_black_end - i, 1, 0);
+            /* p[left_black_start + i + 2] = 128;
+            p[left_black_start + i + 1] = 0;
+            p[center_start + i + 2] = 128;
+            p[center_start + i + 1] = 0;
+            p[left_black_end - i + 2] = 128;
+            p[left_black_end - i + 1] = 0; */
         }
     }
 
@@ -679,6 +725,12 @@ void TargetFinder::colour_horizontal_target(int w, int h, Mat *mat) {
             set_pixel(mat, h, center_end + i, 1, 0);
             set_pixel(mat, h, right_black_start + i, 2, 128);
             set_pixel(mat, h, right_black_start + i, 1, 0);
+            /* p[right_black_end - i + 2] = 128;
+            p[right_black_end - i + 1] = 0;
+            p[center_end + i + 2] = 128;
+            p[center_end + i + 1] = 0;
+            p[right_black_start + i + 2] = 128;
+            p[right_black_start + i + 1] = 0; */
         }
     }
 }
@@ -697,13 +749,16 @@ void TargetFinder::colour_vertical_target(int w, int h, Mat *mat) {
     int right_black_end = h;
 
     for(int i = right_black_start; i <= right_black_end; i++) {
+        // mat->ptr(i)[w + 1] = 64;
         set_pixel(mat, i, w, 1, 64);
     }
     for(int i = center_start; i <= center_end; i++) {
         set_pixel(mat, i, w, 1, 255);
+        // mat->ptr(i)[w + 1] = 255;
     }
     for(int i = left_black_start; i <= left_black_end; i++) {
         set_pixel(mat, i, w, 1, 192);
+        // mat->ptr(i)[w + 1] = 192;
     }
 
     if(this->left_erosion >= 0) {
@@ -714,6 +769,12 @@ void TargetFinder::colour_vertical_target(int w, int h, Mat *mat) {
             set_pixel(mat, center_start - i, w, 0, 128);
             set_pixel(mat, left_black_end + i, w, 1, 0);
             set_pixel(mat, left_black_end + i, w, 0, 128);
+            /* mat->ptr(left_black_start - i)[w + 1] = 0;
+            mat->ptr(left_black_start - i)[w] = 128;
+            mat->ptr(center_start - i)[w + 1] = 0;
+            mat->ptr(center_start - i)[w] = 128;
+            mat->ptr(left_black_end + i)[w + 1] = 128;
+            mat->ptr(left_black_end + i)[w] = 0; */
         }
     } else {
         for(int i = this->left_erosion; i <= -1; i++) {
@@ -723,6 +784,12 @@ void TargetFinder::colour_vertical_target(int w, int h, Mat *mat) {
             set_pixel(mat, center_start + i, w, 0, 128);
             set_pixel(mat, left_black_end - i, w, 1, 0);
             set_pixel(mat, left_black_end - i, w, 0, 128);
+            /* mat->ptr(left_black_start + i)[w + 1] = 0;
+            mat->ptr(left_black_start + i)[w] = 128;
+            mat->ptr(center_start + i)[w + 1] = 0;
+            mat->ptr(center_start + i)[w + 1] = 128;
+            mat->ptr(left_black_end - i)[w + 1] = 128;
+            mat->ptr(left_black_end - i)[w] = 0; */
         }
     }
 
@@ -734,6 +801,12 @@ void TargetFinder::colour_vertical_target(int w, int h, Mat *mat) {
             set_pixel(mat, center_end + i, w, 0, 128);
             set_pixel(mat, right_black_start - i, w, 1, 0);
             set_pixel(mat, right_black_start - i, w, 0, 128);
+            /* mat->ptr(right_black_end + i)[w + 1] = 0;
+            mat->ptr(right_black_end + i)[w] = 128;
+            mat->ptr(center_end + i)[w + 1] = 0;
+            mat->ptr(center_end + i)[w] = 128;
+            mat->ptr(right_black_start - i)[w + 1] = 0;
+            mat->ptr(right_black_start - i)[w] = 128; */
         }
     } else {
         for(int i = this->right_erosion; i <= -1; i++) {
@@ -743,6 +816,12 @@ void TargetFinder::colour_vertical_target(int w, int h, Mat *mat) {
             set_pixel(mat, center_end - i, w, 0, 128);
             set_pixel(mat, right_black_start + i, w, 1, 0);
             set_pixel(mat, right_black_start + i, w, 0, 128);
+            /* mat->ptr(right_black_end - i)[w + 1] = 0;
+            mat->ptr(right_black_end - i)[w] = 128;
+            mat->ptr(center_end - i)[w + 1] = 0;
+            mat->ptr(center_end - i)[w] = 128;
+            mat->ptr(right_black_start + i)[w + 1] = 0;
+            mat->ptr(right_black_start + i)[w] = 128; */
         }
     }
 }

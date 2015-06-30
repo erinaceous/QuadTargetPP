@@ -39,7 +39,7 @@ int main() {
     cap.set(CV_CAP_PROP_FRAME_HEIGHT, pt.get<int>("camera.height"));
     cap.set(CV_CAP_PROP_FPS, pt.get<int>("camera.fps"));
 
-    TargetFinder tf = TargetFinder();
+    TargetFinder tf = TargetFinder(headless);
 
     bool running = true;
     Mat frame;

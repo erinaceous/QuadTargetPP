@@ -148,7 +148,7 @@ public:
     static constexpr double LR_BLACK_TO_CENTER_RATIO_THRESHOLD = 0.3;
     static constexpr double VALID_ROWS_TO_CENTER_RATIO = 0.1;
 
-    TargetFinder();
+    TargetFinder(bool headless);
     vector<FoundTarget> do_target_recognition(Mat* input_mat, Mat* output_mat);
 
 private:
@@ -162,6 +162,7 @@ private:
     vector<FoundMarker> markers;
     vector<FoundTarget> final_targets;
     bool found_target = false;
+    bool headless = false;
 
     bool check_sequence(int w, int h);
     bool check_vertical_sequence(
