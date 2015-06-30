@@ -274,8 +274,8 @@ bool FoundTarget::is_close(FoundMarker test_marker) {
             ((m.get_center_x() - test_marker.get_center_x()) ^ 2) +
             ((m.get_center_y() - test_marker.get_center_y()) ^ 2)
         );
-        if(center_dist_apart > (m.get_radius() * 2) * TargetFinder::MIN_DISTANCE_RATIO
-           && center_dist_apart < (m.get_radius() * 2 * 1.4) * TargetFinder::MAX_DISTANCE_RATIO) {
+        if(center_dist_apart > (m.get_radius() * 2) * MIN_DISTANCE_RATIO
+           && center_dist_apart < (m.get_radius() * 2 * 1.4) * MAX_DISTANCE_RATIO) {
             return true;
         }
         return false;
@@ -325,17 +325,17 @@ bool TargetFinder::check_sequence(int w, int h) {
         double left_black_ratio = (double) (this->left_black / this->right_black);
         double left_white_ratio = (double) (this->left_white / this->right_white);
 
-        double pair_ratio_frac = 1 / TargetFinder::PAIR_CENTER_RATIO_THRESHOLD;
-        double pair_frac = 1 / TargetFinder::LR_RATIO_THRESHOLD;
-        if(lr_pair_ratio > TargetFinder::LR_PAIR_RATIO_THRESHOLD
+        double pair_ratio_frac = 1 / PAIR_CENTER_RATIO_THRESHOLD;
+        double pair_frac = 1 / LR_RATIO_THRESHOLD;
+        if(lr_pair_ratio > LR_PAIR_RATIO_THRESHOLD
             && lr_pair_ratio < pair_ratio_frac
-            && left_black_ratio_adjusted > TargetFinder::LR_PAIR_RATIO_THRESHOLD
+            && left_black_ratio_adjusted > LR_PAIR_RATIO_THRESHOLD
             && left_black_ratio_adjusted < pair_ratio_frac
-            && left_white_ratio_adjusted > TargetFinder::LR_PAIR_RATIO_THRESHOLD
+            && left_white_ratio_adjusted > LR_PAIR_RATIO_THRESHOLD
             && left_white_ratio_adjusted < pair_ratio_frac
-            && left_black_ratio > TargetFinder::LR_RATIO_THRESHOLD
+            && left_black_ratio > LR_RATIO_THRESHOLD
             && left_black_ratio < pair_frac
-            && left_white_ratio > TargetFinder::LR_RATIO_THRESHOLD
+            && left_white_ratio > LR_RATIO_THRESHOLD
             && left_white_ratio < pair_frac) {
             DEBUGPRINT("check_sequence inner truth");
             double ratio_left_black_center = (
@@ -348,16 +348,16 @@ bool TargetFinder::check_sequence(int w, int h) {
             double ratio_left_pair_center = (left_pair * 1.5) / ((double) this->center_black + erosion * 2);
             double ratio_right_pair_center = (right_pair * 1.5) / ((double) this->center_black + erosion * 2);
 
-            double lr_black_center_frac = 1 / TargetFinder::LR_BLACK_TO_CENTER_RATIO_THRESHOLD;
+            double lr_black_center_frac = 1 / LR_BLACK_TO_CENTER_RATIO_THRESHOLD;
 
             if(
-                ratio_left_pair_center > TargetFinder::PAIR_CENTER_RATIO_THRESHOLD
+                ratio_left_pair_center > PAIR_CENTER_RATIO_THRESHOLD
                 && ratio_left_pair_center < pair_ratio_frac
-                && ratio_right_pair_center > TargetFinder::PAIR_CENTER_RATIO_THRESHOLD
+                && ratio_right_pair_center > PAIR_CENTER_RATIO_THRESHOLD
                 && ratio_right_pair_center < pair_ratio_frac
-                && ratio_left_black_center > TargetFinder::LR_BLACK_TO_CENTER_RATIO_THRESHOLD
+                && ratio_left_black_center > LR_BLACK_TO_CENTER_RATIO_THRESHOLD
                 && ratio_left_black_center < lr_black_center_frac
-                && ratio_right_black_center > TargetFinder::LR_BLACK_TO_CENTER_RATIO_THRESHOLD
+                && ratio_right_black_center > LR_BLACK_TO_CENTER_RATIO_THRESHOLD
                 && ratio_right_black_center < lr_black_center_frac
                 && this->left_erosion < this->left_black
                 && this->right_erosion < this->right_black
@@ -387,9 +387,9 @@ bool TargetFinder::check_vertical_sequence(
 
     uchar* p = input_mat->ptr<uchar>(h);
     uchar pixel = p[w];
-    uchar contrast = (uchar) (255 * this->contrast);
-    //uchar black = contrast;
-    //uchar white = 255 - contrast;
+    // uchar contrast = (uchar) (255 * CONTRAST);
+    // uchar black = contrast;
+    // uchar white = 255 - contrast;
     uchar black = 0;
     uchar white = 255;
     if(pixel != black) {
@@ -434,8 +434,8 @@ bool TargetFinder::check_vertical_sequence(
         int right_x = w + this->right_erosion;
         double center_horiz_vert_ratio = (double) (right_x - left_x) / radius;
 
-        if(center_horiz_vert_ratio < TargetFinder::CENTER_ELLIPTICAL_RATIO
-            || center_horiz_vert_ratio > (1 / TargetFinder::CENTER_ELLIPTICAL_RATIO)) {
+        if(center_horiz_vert_ratio < CENTER_ELLIPTICAL_RATIO
+            || center_horiz_vert_ratio > (1 / CENTER_ELLIPTICAL_RATIO)) {
             uchar* p1 = output_mat->ptr(h);
             p1[w] = 0;
             p1[++w] = 0;
@@ -517,8 +517,8 @@ void TargetFinder::group_targets() {
 
         for(int x = 0; x < this->final_targets.size(); x++) {
             FoundTarget t = this->final_targets.at(i);
-            if(next_marker.get_radius() > t.get_average_radius() * TargetFinder::MIN_TARGET_SIZE_RATIO
-                && next_marker.get_radius() < t.get_average_radius() * TargetFinder::MAX_TARGET_SIZE_RATIO) {
+            if(next_marker.get_radius() > t.get_average_radius() * MIN_TARGET_SIZE_RATIO
+                && next_marker.get_radius() < t.get_average_radius() * MAX_TARGET_SIZE_RATIO) {
                 if(t.is_close(next_marker)) {
                     t.add_marker(next_marker);
                     found = true;
@@ -544,7 +544,7 @@ void TargetFinder::refine_target_vertically(Mat *input_mat, Mat *output_mat) {
 
         for(int x = m.get_center_x() - (int)((m.get_center_radius() + 1) / 2);
             x <= m.get_center_x() + (int)((m.get_center_radius() + 1) / 2); x++) {
-            if((double) m.get_valid_y_count() / m.get_center_radius() > TargetFinder::VALID_ROWS_TO_CENTER_RATIO) {
+            if((double) m.get_valid_y_count() / m.get_center_radius() > VALID_ROWS_TO_CENTER_RATIO) {
                 if(this->check_vertical_sequence(x, m.get_center_y(), m.get_radius(),
                                                  input_mat, output_mat)) {
                     valid_sequences++;
@@ -593,16 +593,16 @@ Mat TargetFinder::recognise_target(Mat *input_mat) {
                 set_pixel(&output_mat, h, w, 2, 255); */
             }
             else if (pixel == 0) {
-                o[3 * w] = 0;
-                o[3 * w + 1] = 0;
-                o[3 * w + 2] = 0;
+                o[3 * w] = 128;
+                o[3 * w + 1] = 128;
+                o[3 * w + 2] = 128;
                 /* set_pixel(&output_mat, h, w, 0, 0);
                 set_pixel(&output_mat, h, w, 1, 0);
                 set_pixel(&output_mat, h, w, 2, 0); */
             } else {
-                o[3 * w] = 128;
-                o[3 * w + 1] = 128;
-                o[3 * w + 2] = 128;
+                o[3 * w] = 0;
+                o[3 * w + 1] = 0;
+                o[3 * w + 2] = 0;
                 /* set_pixel(&output_mat, h, w, 0, 128);
                 set_pixel(&output_mat, h, w, 1, 128);
                 set_pixel(&output_mat, h, w, 2, 128); */

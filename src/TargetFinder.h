@@ -21,6 +21,26 @@
 using namespace cv;
 using namespace std;
 
+// TODO: Give the TargetFinder class its own instance versions of these vars.
+
+static double SAMPLE_EVERY = 1.0 / 30.0;     // Try and keep this FPS
+static double UPDATE_EVERY = 1.0 / 10.0;
+static double DECAY_RATE = 0.1;  // Decay for confidence values
+static double CONTRAST = 0.0;
+
+static double CENTER_ELLIPTICAL_RATIO = 0.5;
+static double CENTER_DISTANCES_RATIO = 0.6;
+static double MIN_DISTANCE_RATIO = CENTER_DISTANCES_RATIO;
+static double MAX_DISTANCE_RATIO = 1.0 / CENTER_DISTANCES_RATIO;
+static double TARGET_SIZE_RATIO = 0.5;
+static double MIN_TARGET_SIZE_RATIO = TARGET_SIZE_RATIO;
+static double MAX_TARGET_SIZE_RATIO = 1.0 / TARGET_SIZE_RATIO;
+static double LR_PAIR_RATIO_THRESHOLD = 0.7;
+static double PAIR_CENTER_RATIO_THRESHOLD = 0.3;
+static double LR_RATIO_THRESHOLD = 0.5;
+static double LR_BLACK_TO_CENTER_RATIO_THRESHOLD = 0.3;
+static double VALID_ROWS_TO_CENTER_RATIO = 0.1;
+
 
 uchar get_pixel(Mat *mat, int y, int x, int c);
 void set_pixel(Mat *mat, int y, int x, int c, uchar v);
@@ -130,33 +150,13 @@ class TargetFinder {
      * grayscale image or colour (3-channel) image.
      */
 public:
-    static constexpr double SAMPLE_EVERY = 1.0 / 30.0;     // Try and keep this FPS
-    static constexpr double UPDATE_EVERY = 1.0 / 10.0;
-    static constexpr double DECAY_RATE = 0.1;  // Decay for confidence values
-    static constexpr double CONTRAST = 0.0;
-
-    static constexpr double CENTER_ELLIPTICAL_RATIO = 0.5;
-    static constexpr double CENTER_DISTANCES_RATIO = 0.6;
-    static constexpr double MIN_DISTANCE_RATIO = CENTER_DISTANCES_RATIO;
-    static constexpr double MAX_DISTANCE_RATIO = 1.0 / CENTER_DISTANCES_RATIO;
-    static constexpr double TARGET_SIZE_RATIO = 0.5;
-    static constexpr double MIN_TARGET_SIZE_RATIO = TARGET_SIZE_RATIO;
-    static constexpr double MAX_TARGET_SIZE_RATIO = 1.0 / TARGET_SIZE_RATIO;
-    static constexpr double LR_PAIR_RATIO_THRESHOLD = 0.7;
-    static constexpr double PAIR_CENTER_RATIO_THRESHOLD = 0.3;
-    static constexpr double LR_RATIO_THRESHOLD = 0.5;
-    static constexpr double LR_BLACK_TO_CENTER_RATIO_THRESHOLD = 0.3;
-    static constexpr double VALID_ROWS_TO_CENTER_RATIO = 0.1;
-
     TargetFinder(bool headless);
     vector<FoundTarget> do_target_recognition(Mat* input_mat, Mat* output_mat);
 
 private:
     Mat* input_mat;
-    double sample_every, update_every, decay_rate;
     double confidence = 1.0;
     double error = 0.0;
-    double contrast = CONTRAST;
     int left_black, left_white, center_black, center_white, right_black,
         right_white, left_erosion, right_erosion;
     vector<FoundMarker> markers;

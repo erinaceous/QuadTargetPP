@@ -17,6 +17,28 @@
 using namespace std;
 using namespace cv;
 
+
+void set_targetfinder_config(boost::property_tree::ptree pt) {
+    #define pg(param) pt.get<double>("params." #param)
+    CENTER_ELLIPTICAL_RATIO = pg(center_elliptical_ratio);
+    CENTER_DISTANCES_RATIO = pg(center_distances_ratio);
+    MIN_DISTANCE_RATIO = pg(min_distance_ratio);
+    MAX_DISTANCE_RATIO = pg(max_distance_ratio);
+    TARGET_SIZE_RATIO = pg(target_size_ratio);
+    MIN_TARGET_SIZE_RATIO = pg(min_target_size_ratio);
+    MAX_TARGET_SIZE_RATIO = pg(max_target_size_ratio);
+    LR_PAIR_RATIO_THRESHOLD = pg(lr_pair_ratio_threshold);
+    PAIR_CENTER_RATIO_THRESHOLD = pg(pair_center_ratio_threshold);
+    LR_RATIO_THRESHOLD = pg(lr_ratio_threshold);
+    LR_BLACK_TO_CENTER_RATIO_THRESHOLD = pg(lr_black_to_center_ratio_threshold);
+    VALID_ROWS_TO_CENTER_RATIO = pg(valid_rows_to_center_ratio);
+    CONTRAST = pg(contrast);
+    DECAY_RATE = pg(decay_rate);
+    SAMPLE_EVERY = pg(sample_every);
+    UPDATE_EVERY = pg(update_every);
+}
+
+
 int main() {
     boost::property_tree::ptree pt;
     char* config_path = getenv("QUADTARGET_CONFIG");
@@ -39,9 +61,12 @@ int main() {
     cap.set(CV_CAP_PROP_FRAME_HEIGHT, pt.get<int>("camera.height"));
     cap.set(CV_CAP_PROP_FPS, pt.get<int>("camera.fps"));
 
+    set_targetfinder_config(pt);
     TargetFinder tf = TargetFinder(headless);
 
     bool running = true;
+    bool otsu = pt.get<bool>("params.otsu_threshold");
+    uchar binary_threshold = pt.get<uchar>("params.binary_threshold");
     Mat frame;
     Mat processed;
     Mat output;
@@ -49,7 +74,11 @@ int main() {
     while(running) {
         if(cap.read(frame)) {
             cvtColor(frame, processed, CV_BGR2GRAY);
-            threshold(processed, processed, 128, 255, THRESH_OTSU);
+            if(otsu) {
+                threshold(processed, processed, 128, 255, THRESH_OTSU);
+            } else {
+                threshold(processed, processed, binary_threshold, 255, THRESH_BINARY);
+            }
             frame.copyTo(output);
             vector<FoundTarget> ft = tf.do_target_recognition(&processed, &output);
             for(int i = 0; i < ft.size(); i++) {
