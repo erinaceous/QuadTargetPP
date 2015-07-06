@@ -10,130 +10,140 @@ using namespace std;
 
 
 uchar get_pixel(Mat* mat, int y, int x, int c) {
-    if(mat == NULL) {
-        DEBUGPRINT("uninitialized Mat, returning 0");
-        return 0;
-    }
-    if(y < 0 || y >= mat->rows || x < 0 || x >= mat->cols || c < 0 || c >= mat->channels()) {
-        return 0;
-    }
-    return mat->at<uchar>(y, x);
+    return mat->ptr(y)[(mat->channels() * x) + c];
 }
 
 
 void set_pixel(Mat* mat, int y, int x, int c, uchar v) {
+    mat->ptr(y)[(mat->channels() * x) + c] = v;
+}
+
+
+#define set_pixel_safe(mat, y, x, c, v) if(in_bounds(mat, y, x, c)) { \
+    set_pixel(mat, y, x, c, v); \
+}
+
+
+#define set_pixel3(mat, y, x, b, g, r) if(in_bounds(mat, y, x, 2)) { \
+   uchar* o = mat->ptr(y); \
+   o[3 * x] = b; \
+   o[(3 * x) + 1] = g; \
+   o[(3 * x) + 2] = r; \
+}
+
+
+bool in_bounds(Mat* mat, int y, int x, int c) {
     if(mat == NULL) {
         DEBUGPRINT("uninitialized Mat");
-        return;
+        return false;
     }
     if(y < 0 || y >= mat->rows || x < 0 || x >= mat->cols || c < 0 || c >= mat->channels()) {
-        return;
+        return false;
     }
-    mat->at<Vec3b>(y, x)[c] = v;
+    return true;
 }
 
 
-FoundMarker::FoundMarker(int y, int center_left, int center_right, int left_x,
+FoundMarker::FoundMarker(int y, int centerleft, int centerright, int left_x,
                          int right_x) {
-    this->center_left_x = center_left;
-    this->center_right_x = center_right;
-    this->center_x = (center_left - center_right) / 2;
-    this->left_x = left_x;
-    this->right_x = right_x;
-    this->first_max_y = y;
-    this->last_max_y = y;
-    this->first_valid_y = y;
+    centerleftx = centerleft;
+    centerrightx = centerright;
+    centerx = (centerleft+centerright)/2;
+    leftx = left_x;
+    rightx = right_x;
+    firstmaxy = y;
+    lastmaxy = y;
+
+    firstValidy = y;
 }
 
 
-int FoundMarker::get_center_x() {
-    return (int) (this->center_x + 0.5);
+double FoundMarker::getCenterX() {
+    return (int)(centerx + 0.5);
 }
 
-int FoundMarker::get_center_y() {
-    return (int) ((this->last_max_y + this->first_max_y) / 2);
-}
-
-
-int FoundMarker::get_center_radius() {
-    return this->center_right_x - this->center_left_x;
+double FoundMarker::getCenterY() {
+    return ((double) (lastmaxy + firstmaxy) / 2);
 }
 
 
-int FoundMarker::get_radius() {
-    return this->right_x - this->left_x;
+double FoundMarker::centerRadius() {
+    return centerrightx - centerleftx;
 }
 
 
-int FoundMarker::get_max_y_count() {
-    return this->last_max_y - this->first_max_y + 1;
+double FoundMarker::radius() {
+    return rightx - leftx;
 }
 
 
-bool FoundMarker::is_y_close(int y) {
-    if(abs(y - this->last_max_y) < 10 ||
-       abs(y - this->first_max_y < this->get_radius())) {
+int FoundMarker::getMaxyCount() {
+    return lastmaxy - firstmaxy + 1;
+}
+
+
+bool FoundMarker::yClose(int y) {
+    if(abs(y - lastmaxy) < 10 ||
+       abs(y - firstmaxy < radius())) {
         return true;
     }
     return false;
 }
 
 
-bool FoundMarker::is_x_close(int x) {
-    if(x > this->left_x && x < this->right_x) {
+bool FoundMarker::xClose(int x) {
+    if(x > leftx && x < rightx) {
         return true;
     }
     return false;
 }
 
 
-void FoundMarker::expand(int y, int center_left, int center_right, int left_x,
+void FoundMarker::expand(int y, int centerleft, int centerright, int left_x,
                          int right_x) {
-    int center_radius = this->get_center_radius();
-    if(center_radius < (center_right - center_left)) {
-        this->center_left_x = center_left;
-        this->center_right_x = center_right;
-        this->first_max_y = y;
-        this->center_x = (int) (((double) this->center_right_x
-                                        + this->center_left_x) / 2);
+    if (centerRadius() < (centerright-centerleft)){
+        // this row is closer to the center
+        centerleftx = centerleft;
+        centerrightx = centerright;
+        firstmaxy = y;
+        centerx = (int)(((double)centerrightx+centerleftx)/2);
     }
 
-    if(center_radius == (center_right - center_left)) {
-        this->last_max_y = y;
-        this->center_left_x = center_left;
-        this->center_right_x = center_right;
+    if (centerRadius() == (centerright-centerleft)){
+        lastmaxy = y;
+        centerleftx = centerleft;
+        centerrightx = centerright;
+        // all centers are used to calculate the final answer to average any anomalies
+        // this isn't quite right because the latest ones have more influence
+        //centerx = (centerx+(centerrightx+centerleftx)/2)/2;
     }
 
-    if(this->get_radius() < (right_x - left_x)) {
-        this->left_x = left_x;
-        this->right_x = right_x;
+    if (radius() < (right_x-left_x)){
+        // this row is closer to the center
+        leftx = left_x;
+        rightx = right_x;
+        //firstmaxy = y;
     }
 
-    this->last_valid_y = y;
+    lastValidy = y;
 }
 
 
-int FoundMarker::get_valid_y_count() {
-    return this->last_valid_y - this->first_valid_y;
+int FoundMarker::getValidyCount() {
+    return lastValidy - firstValidy;
 }
 
 
-void FoundMarker::mark_center(Mat *mat) {
-    int y = (int) (this->get_center_y() + 0.5);
-    int x = (int) (this->get_center_x() + 0.5);
-    uchar* p = mat->ptr(y);
-    p[x] = 255;
-    p[x + 1] = 0;
-    p[x + 2] = 0;
-    /* set_pixel(mat, y, x, 0, 255);
-    set_pixel(mat, y, x, 1, 0);
-    set_pixel(mat, y, x, 2, 255); */
+void FoundMarker::markCenter(Mat *mat) {
+    int y = (int) getCenterY();
+    int x = (int) getCenterX();
+    set_pixel3(mat, y, x, 255, 0, 0);
 }
 
 
 double FoundMarker::angle(FoundMarker t1, FoundMarker t2) {
-    double dx = t2.get_center_x() - t1.get_center_x();
-    double dy = t1.get_center_y() - t2.get_center_y();
+    double dx = t2.getCenterX() - t1.getCenterX();
+    double dy = t1.getCenterY() - t2.getCenterY();
 
     if(dx == 0) return 0;
 
@@ -142,78 +152,50 @@ double FoundMarker::angle(FoundMarker t1, FoundMarker t2) {
 
 
 FoundTarget::FoundTarget(int x, int y) {
-    this->markers = vector<FoundMarker>();
-    this->image_size_x = x;
-    this->image_size_y = y;
+    markers = vector<FoundMarker>();
+    imagesizex = x;
+    imagesizey = y;
+    DEBUGPRINT(toString());
 }
 
 
-double FoundTarget::get_size() {
-    return this->size;
+void FoundTarget::addMarker(FoundMarker marker) {
+    DEBUGPRINT("Added marker");
+    markers.push_back(marker);
 }
 
 
-double FoundTarget::get_rotation() {
-    return this->rotation;
-}
-
-
-double FoundTarget::get_center_x() {
-    return this->center_x;
-}
-
-
-double FoundTarget::get_center_y() {
-    return this->center_y;
-}
-
-
-int FoundTarget::get_image_size_x() {
-    return this->image_size_x;
-}
-
-
-int FoundTarget::get_image_size_y() {
-    return this->image_size_y;
-}
-
-
-void FoundTarget::add_marker(FoundMarker marker) {
-    this->markers.push_back(marker);
-}
-
-
-double FoundTarget::get_average_center_width() {
+double FoundTarget::getAveCenterWidth() {
     double center_width = 0;
-    int count = this->markers.size();
+    vector<FoundMarker>::size_type count = markers.size();
 
-    for(int i = 0; i < count; i++) {
-        center_width += this->markers.at(i).get_center_radius();
+    for(vector<FoundMarker>::size_type i = 0; i < count; i++) {
+        center_width += markers[i].centerRadius();
     }
 
-    return center_width / count;
+    return center_width / (double) count;
 }
 
 
-double FoundTarget::get_average_radius() {
+double FoundTarget::getAveRadius() {
     double total_width = 0;
-    int count = this->markers.size();
+    vector<FoundMarker>::size_type count = markers.size();
 
-    for(int i = 0; i < count; i++) {
-        total_width += this->markers.at(i).get_radius();
+    for(vector<FoundMarker>::size_type i = 0; i < count; i++) {
+        total_width += markers[i].radius();
     }
 
-    return total_width / count;
+    return total_width / (double) count;
 }
 
 
-void FoundTarget::calculate_geometry() {
-    double a01 = FoundMarker::angle(this->markers.at(0), this->markers.at(1));
-    double a02 = FoundMarker::angle(this->markers.at(0), this->markers.at(2));
-    double a10 = FoundMarker::angle(this->markers.at(1), this->markers.at(0));
-    double a12 = FoundMarker::angle(this->markers.at(1), this->markers.at(2));
-    double a20 = FoundMarker::angle(this->markers.at(2), this->markers.at(0));
-    double a21 = FoundMarker::angle(this->markers.at(2), this->markers.at(1));
+void FoundTarget::calculateGeometry() {
+    double a01 = FoundMarker::angle(markers[0], markers[1]);
+    double a02 = FoundMarker::angle(markers[0], markers[2]);
+    double a10 = FoundMarker::angle(markers[1], markers[0]);
+    double a12 = FoundMarker::angle(markers[1], markers[2]);
+    double a20 = FoundMarker::angle(markers[2], markers[0]);
+    double a21 = FoundMarker::angle(markers[2], markers[1]);
     double a0 = abs(a01 - a02);
     double a1 = abs(a10 - a12);
     double a2 = abs(a20 - a21);
@@ -223,59 +205,61 @@ void FoundTarget::calculate_geometry() {
     if(a2 > 180) a2 = 360 - a2;
 
     if(a0 >= a1 && a0 >= a2) {
-        this->corner = &this->markers.at(0);
-        this->corner_angle = a0;
-        this->center_x = (
-            this->markers.at(1).get_center_x() + this->markers.at(2).get_center_x()
+        corner = &markers[0];
+        cornerAngle = a0;
+        centerx = (
+                          markers[1].getCenterX() + markers[2].getCenterX()
         ) / 2;
-        this->center_y = (
-            this->markers.at(1).get_center_y() + this->markers.at(2).get_center_y()
+        centery = (
+                          markers[1].getCenterY() + markers[2].getCenterY()
         ) / 2;
     }
 
     if(a1 >= a0 && a1 >= a2) {
-        this->corner = &this->markers.at(1);
-        this->corner_angle = a1;
-        this->center_x = (
-            this->markers.at(0).get_center_x() + this->markers.at(2).get_center_x()
+        corner = &markers[1];
+        cornerAngle = a1;
+        centerx = (
+                          markers[0].getCenterX() + markers[2].getCenterX()
         ) / 2;
-        this->center_y = (
-            this->markers.at(0).get_center_y() + this->markers.at(2).get_center_y()
+        centery = (
+                          markers[0].getCenterY() + markers[2].getCenterY()
         ) / 2;
     }
 
     if(a2 >= a0 && a2 >= a1) {
-        this->corner = &this->markers.at(2);
-        this->corner_angle = a2;
-        this->center_x = (
-            this->markers.at(0).get_center_x() + this->markers.at(1).get_center_x()
+        corner = &markers[2];
+        cornerAngle = a2;
+        centerx = (
+                          markers[0].getCenterX() + markers[1].getCenterX()
         ) / 2;
-        this->center_y = (
-            this->markers.at(0).get_center_y() + this->markers.at(1).get_center_y()
+        centery = (
+                          markers[0].getCenterY() + markers[1].getCenterY()
         ) / 2;
     }
 
-    double dx = this->corner->get_center_x() - this->center_x;
-    double dy = this->corner->get_center_y() - this->center_y;
-    this->rotation = atan2(dy, dx) * RADIANS_TO_DEGREES;
-    this->size = sqrt((dx * dx) + (dy * dy));
+    double dx = corner->getCenterX() - centerx;
+    double dy = corner->getCenterY() - centery;
+    rotation = atan2(dy, dx) * RADIANS_TO_DEGREES;
+    size = sqrt((dx * dx) + (dy * dy));
 }
 
 
-bool FoundTarget::has_three_markers() {
-    return this->markers.size() == 3;
+bool FoundTarget::hasThreeMarkers() {
+    return markers.size() == 3;
 }
 
 
-bool FoundTarget::is_close(FoundMarker test_marker) {
-    for(int i = 0; i < this->markers.size(); i++) {
-        FoundMarker m = this->markers[i];
+bool FoundTarget::isClose(FoundMarker testMarker) {
+    DEBUGPRINT("isClose, markers: " << markers.size());
+    for(vector<FoundMarker>::size_type i = 0; i < markers.size(); i++) {
+    // for(vector<FoundMarker>::iterator i = markers.begin(); i < markers.end(); i++) {
+        FoundMarker m = markers[i];
         double center_dist_apart = sqrt(
-            ((m.get_center_x() - test_marker.get_center_x()) ^ 2) +
-            ((m.get_center_y() - test_marker.get_center_y()) ^ 2)
+            pow((m.getCenterX() - testMarker.getCenterX()), 2) +
+            pow((m.getCenterY() - testMarker.getCenterY()), 2)
         );
-        if(center_dist_apart > (m.get_radius() * 2) * MIN_DISTANCE_RATIO
-           && center_dist_apart < (m.get_radius() * 2 * 1.4) * MAX_DISTANCE_RATIO) {
+        if(center_dist_apart > (m.radius() * 2) * MINDISTANCERATIO
+           && center_dist_apart < (m.radius() * 2 * 1.4) * MAXDISTANCERATIO) {
             return true;
         }
         return false;
@@ -285,150 +269,64 @@ bool FoundTarget::is_close(FoundMarker test_marker) {
 
 string FoundTarget::toString() {
     stringstream s;
-    s << "x=" << this->center_x << ",y=" << this->center_y << ",size="
-      << this->size << ",angle=" << this->get_rotation();
+    s << "x=" << centerx << ",y=" << centery << ",size="
+      << size << ",angle=" << rotation;
     return s.str();
 }
 
 
-TargetFinder::TargetFinder(bool headless) {
-    this->headless = headless;
+TargetFinder::TargetFinder(bool set_headless) {
+    headless = set_headless;
 }
 
 
-/* bool TargetFinder::check_sequence(int w, int h) {
-    if(this->left_white == 0 || this->right_white == 0
-       || this->right_black == 0 || this->left_black == 0) {
+bool TargetFinder::checkSequence(int w, int h) {
+    if (leftWhite == 0 ||
+        rightWhite == 0 ||
+        rightBlack == 0 ||
+        leftBlack == 0) {
         return false;
     }
 
-    if(this->center_black != 0) {
-        DEBUGPRINT("check_sequence truth");
-        double left_pair = this->left_black + this->left_white;
-        double right_pair = this->right_black + this->right_white;
-        double lr_pair_ratio = (double) left_pair / right_pair;
-        this->left_erosion = (int) ((((left_pair / 2) - this->left_black) / 2));
-        this->right_erosion = (int) ((((right_pair / 2) - this->right_black) / 2));
-        double erosion = (this->left_erosion + this->right_erosion) / 2;
-
-        double left_black_erosion_sq = this->left_black + (this->left_erosion * 2);
-        double left_white_erosion_sq = this->left_white - (this->left_erosion * 2);
-        double right_black_erosion_sq = this->right_black + (this->right_erosion * 2);
-        double right_white_erosion_sq = this->right_white - (this->right_erosion * 2);
-        double center_black_erosion_sq = this->center_black + this->left_erosion + this->right_erosion;
-        double center_white_erosion_sq = this->center_white + this->left_erosion + this->right_erosion;
-
-        double left_black_ratio_adjusted = (double)
-            left_black_erosion_sq / right_black_erosion_sq;
-        double left_white_ratio_adjusted = (double)
-            left_white_erosion_sq / right_white_erosion_sq;
-        double left_black_ratio = (double) this->left_black / (double) this->right_black;
-        double left_white_ratio = (double) this->left_white / (double) this->right_white;
-
-        double pair_center_ratio_frac = 1 / PAIR_CENTER_RATIO_THRESHOLD;
-        double pair_ratio_frac = 1 / LR_PAIR_RATIO_THRESHOLD;
-        double pair_frac = 1 / LR_RATIO_THRESHOLD;
-        if(lr_pair_ratio > LR_PAIR_RATIO_THRESHOLD
-            && lr_pair_ratio < pair_ratio_frac
-            && left_black_ratio_adjusted > LR_PAIR_RATIO_THRESHOLD
-            && left_black_ratio_adjusted < pair_ratio_frac
-            && left_white_ratio_adjusted > LR_PAIR_RATIO_THRESHOLD
-            && left_white_ratio_adjusted < pair_ratio_frac
-            && left_black_ratio > LR_RATIO_THRESHOLD
-            && left_black_ratio < pair_frac
-            && left_white_ratio > LR_RATIO_THRESHOLD
-            && left_white_ratio < pair_frac) {
-            DEBUGPRINT("check_sequence inner truth");
-            double ratio_left_black_center = (
-                (double) (left_black_erosion_sq * 3) / (center_black_erosion_sq)
-            );
-            double ratio_right_black_center = (
-                (double) (right_black_erosion_sq * 3) / (center_black_erosion_sq)
-            );
-
-            double ratio_left_pair_center = ((double) left_pair * 1.5) / ((double) this->center_black + erosion * 2);
-            double ratio_right_pair_center = ((double) right_pair * 1.5) / ((double) this->center_black + erosion * 2);
-
-            double lr_black_center_frac = 1 / LR_BLACK_TO_CENTER_RATIO_THRESHOLD;
-
-            if(
-                ratio_left_pair_center > PAIR_CENTER_RATIO_THRESHOLD
-                && ratio_left_pair_center < pair_center_ratio_frac
-                && ratio_right_pair_center > PAIR_CENTER_RATIO_THRESHOLD
-                && ratio_right_pair_center < pair_center_ratio_frac
-                && ratio_left_black_center > LR_BLACK_TO_CENTER_RATIO_THRESHOLD
-                && ratio_left_black_center < lr_black_center_frac
-                && ratio_right_black_center > LR_BLACK_TO_CENTER_RATIO_THRESHOLD
-                && ratio_right_black_center < lr_black_center_frac
-                && this->left_erosion < this->left_black
-                && this->right_erosion < this->right_black
-            ) {
-                DEBUGPRINT("check_sequence inner inner truth");
-                return true;
-            }
-        }
-    }
-    return false;
-} */
-
-
-bool TargetFinder::check_sequence(int w, int h) {
-    if (this->left_white == 0 ||
-        this->right_white == 0 ||
-        this->right_black == 0 ||
-        this->left_black == 0) {
-        return false;
-    }
-
-    if (this->center_black != 0){
-        DEBUGPRINT("checkSequence truth");
-        double leftPair = this->left_black+this->left_white;
-        double rightPair = this->right_black+this->right_white;
+    if (centerBlack != 0){
+        double leftPair = leftBlack+leftWhite;
+        double rightPair = rightBlack+rightWhite;
 
         double LRPairRatio = (double)leftPair/rightPair;
-        this->left_erosion = (int)((((leftPair/2)-this->left_black)/2));
-        this->right_erosion = (int)((((rightPair/2)-this->right_black)/2));
-        double erosion = (this->left_erosion+this->right_erosion)/2; //average reduction in apparent width of target
-
-        double LBlackRatioAdjusted = (double)(this->left_black+this->left_erosion+this->left_erosion)/(this->right_black+this->right_erosion+this->right_erosion);
-        double LWhiteRatioAdjusted = (double)(this->left_white-this->left_erosion-this->left_erosion)/(this->right_white-this->right_erosion-this->right_erosion);
-        double LBlackRatio = (double)(this->left_black)/(this->right_black);
-        double LWhiteRatio = (double)(this->left_white)/(this->right_white);
+        double LBlackRatioAdjusted = (double)(leftBlack)/(rightBlack);
+        double LWhiteRatioAdjusted = (double)(leftWhite)/(rightWhite);
+        double LBlackRatio = (double)(leftBlack)/(rightBlack);
+        double LWhiteRatio = (double)(leftWhite)/(rightWhite);
 
         // are the left and right pairs similar dimensions?
         if
-                ( LRPairRatio > LR_PAIR_RATIO_THRESHOLD && LRPairRatio < (1/LR_PAIR_RATIO_THRESHOLD)
-                  && LBlackRatioAdjusted > LR_PAIR_RATIO_THRESHOLD && LBlackRatioAdjusted < (1/LR_PAIR_RATIO_THRESHOLD)
-                  && LWhiteRatioAdjusted > LR_PAIR_RATIO_THRESHOLD && LWhiteRatioAdjusted < (1/LR_PAIR_RATIO_THRESHOLD)
-                  && LBlackRatio > LR_RATIO_THRESHOLD && LBlackRatio < (1/LR_RATIO_THRESHOLD)
-                  && LWhiteRatio > LR_RATIO_THRESHOLD && LWhiteRatio < (1/LR_RATIO_THRESHOLD)
+                ( LRPairRatio > LRPairRatioThreshold && LRPairRatio < (1/LRPairRatioThreshold)
+                  && LBlackRatioAdjusted > LRPairRatioThreshold && LBlackRatioAdjusted < (1/LRPairRatioThreshold)
+                  && LWhiteRatioAdjusted > LRPairRatioThreshold && LWhiteRatioAdjusted < (1/LRPairRatioThreshold)
+                  && LBlackRatio > LRRatioThreshold && LBlackRatio < (1/LRRatioThreshold)
+                  && LWhiteRatio > LRRatioThreshold && LWhiteRatio < (1/LRRatioThreshold)
                 ){
-            DEBUGPRINT("checkSequence inner truth");
             // is the center the correct ratio 3:1 center to black ring
-            double ratioLeftBlackToCenter = ((double)(this->left_black+this->left_erosion+this->left_erosion)*3)/(this->center_black+this->left_erosion+this->right_erosion);
-            double ratioRightBlackToCenter = ((double)(this->right_black+this->right_erosion+this->right_erosion))*3/(this->center_black+this->left_erosion+this->right_erosion);
+            double ratioLeftBlackToCenter = ((double)(leftBlack)*3)/(centerBlack);
+            double ratioRightBlackToCenter = ((double)(rightBlack))*3/(centerBlack);
 
             // pair is 2 bands wide and center is 3 so expected size of center is pair*1.5
-            double ratioLeftPairToCenter = ((double)leftPair*1.5)/((double)this->center_black+erosion*2);
-            double ratioRightPairToCenter = ((double)rightPair*1.5)/((double)this->center_black+erosion*2);
+            double ratioLeftPairToCenter = ((double)leftPair*1.5)/((double)centerBlack*2);
+            double ratioRightPairToCenter = ((double)rightPair*1.5)/((double)centerBlack*2);
 
-            if (       ratioLeftPairToCenter > PAIR_CENTER_RATIO_THRESHOLD
-                       && ratioLeftPairToCenter < (1/PAIR_CENTER_RATIO_THRESHOLD)
-                       && ratioRightPairToCenter > PAIR_CENTER_RATIO_THRESHOLD
-                       && ratioRightPairToCenter < (1/PAIR_CENTER_RATIO_THRESHOLD)
+            if (       ratioLeftPairToCenter > pairCenterRatioThreshold
+                       && ratioLeftPairToCenter < (1/pairCenterRatioThreshold)
+                       && ratioRightPairToCenter > pairCenterRatioThreshold
+                       && ratioRightPairToCenter < (1/pairCenterRatioThreshold)
 
-                       && ratioLeftBlackToCenter > LR_BLACK_TO_CENTER_RATIO_THRESHOLD
-                       && ratioLeftBlackToCenter < (1/LR_BLACK_TO_CENTER_RATIO_THRESHOLD)
-                       && ratioRightBlackToCenter > LR_BLACK_TO_CENTER_RATIO_THRESHOLD
-                       && ratioRightBlackToCenter < (1/LR_BLACK_TO_CENTER_RATIO_THRESHOLD)
-                       // don't allow more erosion componsation than visible rings
-                       && this->left_erosion < this->left_black
-                       && this->right_erosion < this->right_black
+                       && ratioLeftBlackToCenter > LRBlacktoCenterRatioThreshold
+                       && ratioLeftBlackToCenter < (1/LRBlacktoCenterRatioThreshold)
+                       && ratioRightBlackToCenter > LRBlacktoCenterRatioThreshold
+                       && ratioRightBlackToCenter < (1/LRBlacktoCenterRatioThreshold)
                     ){
                 //System.out.println("Found pattern at "+w+" "+h);
-                //System.out.println("Left E:"+this->left_erosion+"   Right E:"+this->right_erosion);
+                //System.out.println("Left E:"+leftErosion+"   Right E:"+rightErosion);
 
-                DEBUGPRINT("checkSequence inner inner truth");
                 return true;
             }
         }
@@ -438,93 +336,84 @@ bool TargetFinder::check_sequence(int w, int h) {
 }
 
 
-bool TargetFinder::check_vertical_sequence(
-    int w, int h, int radius, Mat* input_mat, Mat* output_mat) {
+bool TargetFinder::checkVerticalSequence(
+        int w, int h, int radius, Mat *input_mat, Mat *output_mat) {
     int height = input_mat->rows;
-    this->left_black = 0;
-    this->left_white = 0;
-    this->center_black = 0;
-    this->right_black = 0;
-    this->right_white = 0;
-    int target_center_edge = h;
 
-    /* set_pixel(output_mat, h, w, 0, 0);
-    set_pixel(output_mat, h, w, 1, 0);
-    set_pixel(output_mat, h, w, 2, 255); */
-    uchar* o = output_mat->ptr(h);
-    o[3 * w] = 0;
-    o[3 * w + 1] = 0;
-    o[3 * w + 2] = 255;
+    leftBlack = 0; // below
+    leftWhite = 0; // below
+    centerBlack = 0;
+    rightWhite = 0; // above
+    rightBlack = 0; // above
+
+    int targetCenterEdge = h;
+
+    uchar black = 0;
+    uchar white = 255;
+
+    // colour test column start point RED
+    set_pixel3(output_mat, h, w, 0, 0, 255);
 
     uchar* p = input_mat->ptr<uchar>(h);
     uchar pixel = p[w];
-    // uchar contrast = (uchar) (255 * CONTRAST);
-    // uchar black = contrast;
-    // uchar white = 255 - contrast;
-    uchar black = 0;
-    uchar white = 255;
-    if(pixel != black) {
-        DEBUGPRINT("must be a black center pixel");
+    if (pixel != black){
+        DEBUGPRINT("checkVerticalSequence: must be a black center pixel!");
         return false;
     }
+
     int h1 = h;
-    while(h1 < height && p[w] == black) {
-        this->center_black++;
-        target_center_edge++;
-        p = input_mat->ptr<uchar>(++h1);
+    while (h1 < height && p[w] == black){
+        centerBlack++;
+        targetCenterEdge++;
+        p = input_mat->ptr<uchar>(h1++);
     }
-    while(h1 < height && p[w] == white) {
-        this->right_white++;
-        p = input_mat->ptr<uchar>(++h1);
+
+    while (h1 < height && p[w] == white){
+        rightWhite++;
+        p = input_mat->ptr<uchar>(h1++);
     }
-    while(h1 < height && p[w] == black) {
-        this->right_black++;
-        p = input_mat->ptr<uchar>(++h1);
+
+    while (h1 < height && p[w] == black){
+        rightBlack++;
+        p = input_mat->ptr<uchar>(h1++);
     }
 
     h1 = h;
-    p = input_mat->ptr<uchar>(h1);
-    this->center_black--;
-    while(h1 > 0 && p[w] == black) {
-        this->center_black++;
-        p = input_mat->ptr<uchar>(--h1);
-    }
-    while(h1 > 0 && p[w] == white) {
-        this->left_white++;
-        p = input_mat->ptr<uchar>(--h1);
-    }
-    while(h1 > 0 && p[w] == black) {
-        this->left_black++;
-        p = input_mat->ptr<uchar>(--h1);
+    centerBlack--;
+    while (h1 > 0 && p[w] == black){
+        centerBlack++;
+        p = input_mat->ptr<uchar>(h1--);
     }
 
-    if(this->check_sequence(w, target_center_edge + this->right_white + this->right_black - 1)) {
-        int left_x = w - (this->right_black + this->right_white
-                          + this->center_black + this->left_white
-                          + this->left_black + this->left_erosion) + 1;
-        int right_x = w + this->right_erosion;
-        double center_horiz_vert_ratio = (double) (right_x - left_x) / radius;
+    while (h1 > 0 && p[w] == white){
+        leftWhite++;
+        p = input_mat->ptr<uchar>(h1--);
+    }
 
-        if(center_horiz_vert_ratio < CENTER_ELLIPTICAL_RATIO
-            || center_horiz_vert_ratio > (1 / CENTER_ELLIPTICAL_RATIO)) {
-            uchar* p1 = output_mat->ptr(h);
-            p1[w] = 0;
-            p1[++w] = 0;
-            p1[++w] = 255;
-            DEBUGPRINT("failed on elliptical ratio");
-            /* set_pixel(output_mat, h, w, 2, 0);
-            set_pixel(output_mat, h, w, 1, 0);
-            set_pixel(output_mat, h, w, 0, 255);*/
+    while (h1 > 0 && p[w] == black){
+        leftBlack++;
+        p = input_mat->ptr<uchar>(h1--);
+    }
+
+    if (checkSequence(w, targetCenterEdge + rightWhite + rightBlack - 1)){ //coordinate, not used
+
+        int leftx = w - (rightBlack + rightWhite + centerBlack + leftWhite + leftBlack) + 1;
+        int rightx = w;
+        double centerHorizVertRatio = (double)(rightx-leftx)/radius;
+
+        if (centerHorizVertRatio < CenterElipticalRatio
+            || centerHorizVertRatio > (1 / CenterElipticalRatio)){
+
+            DEBUGPRINT("checkVerticalSequence - Failed on elliptical RATIO: " << centerHorizVertRatio);
+
+            // colour cyan if failed on elliptical ratio
+            set_pixel3(output_mat, h, w, 255, 255, 0);
 
             return false;
         }
 
-        if(!this->headless) {
-            this->colour_vertical_target(
-                    w, target_center_edge + this->right_white + this->right_black - 1,
-                    output_mat
-            );
-        }
+        colourVerticalTarget(w, targetCenterEdge + rightWhite + rightBlack - 1,
+                             output_mat);
         return true;
     }
 
@@ -532,33 +421,39 @@ bool TargetFinder::check_vertical_sequence(
 }
 
 
-void TargetFinder::update_targets(int y, int center_start, int center_end,
-                                  int left_x, int right_x) {
+void TargetFinder::updateTargets(int y, int center_start, int center_end,
+                                 int left_x, int right_x) {
     bool target_found = false;
-    for(int i = 0; i < this->markers.size(); i++) {
-        FoundMarker m = this->markers.at(i);
-        double center_ratio = ((double) center_end - center_start) / m.get_radius();
-        if(m.is_y_close(y) && m.is_x_close((center_start - center_end) / 2)) {
+    DEBUGPRINT("updateTargets Markers: " << markers.size());
+    // for(vector<FoundMarker>::iterator i = markers.begin(); i < markers.end(); i++) {
+    for(vector<FoundMarker>::size_type i = 0; i < markers.size(); i++) {
+        FoundMarker m = markers[i];
+        double center_ratio = ((double) center_end - center_start) /
+                              m.centerRadius();
+        if(m.yClose(y) && m.xClose((center_start - center_end) / 2)) {
             if(center_ratio > 0.5 && center_ratio < 2) {
                 m.expand(y, center_start, center_end, left_x, right_x);
+                DEBUGPRINT("target found!");
                 target_found = true;
             }
         }
     }
 
     if(!target_found) {
-        this->markers.push_back(
+        markers.push_back(
             FoundMarker(y, center_start, center_end, left_x, right_x)
         );
     }
 }
 
 
-void TargetFinder::calculate_geometry() {
-    for(int i = 0; i < this->final_targets.size(); i++) {
-        FoundTarget t = this->final_targets.at(i);
-        if(t.has_three_markers()) {
-            t.calculate_geometry();
+void TargetFinder::calculateGeometry() {
+    DEBUGPRINT("calculateGeometry, final_targets: " << final_targets.size());
+    for(vector<FoundTarget>::size_type i = 0; i < final_targets.size(); i++) {
+    // for(vector<FoundTarget>::iterator i = final_targets.begin(); i < final_targets.end(); i++) {
+        FoundTarget t = final_targets[i];
+        if(t.hasThreeMarkers()) {
+            t.calculateGeometry();
         } else {
             DEBUGPRINT("target with != 3 markers");
         }
@@ -566,31 +461,38 @@ void TargetFinder::calculate_geometry() {
 }
 
 
-void TargetFinder::validate_targets() {
-    for(int i = this->final_targets.size() - 1; i >= 0; i--) {
-        FoundTarget t = this->final_targets.at(i);
-        if(!t.has_three_markers()) {
-            this->final_targets.pop_back();
+void TargetFinder::validateTargets() {
+    DEBUGPRINT("validateTargets, final_targets: " << final_targets.size());
+    if(final_targets.size() == 0) {
+        return;
+    }
+    for(vector<FoundTarget>::size_type i = final_targets.size() - 1; i > 0; i--) {
+    // for(vector<FoundTarget>::iterator i = final_targets.end(); i > final_targets.begin(); --i) {
+        FoundTarget t = final_targets[i];
+        if(!t.hasThreeMarkers()) {
+            final_targets.pop_back();
         }
     }
 }
 
 
-void TargetFinder::group_targets() {
-    this->final_targets.clear();
+void TargetFinder::groupTargets() {
+    final_targets.clear();
+    DEBUGPRINT("groupTargets, markers: " << markers.size());
 
-    int i;
-    while((i = this->markers.size()) != 0) {
-        FoundMarker next_marker = this->markers.at(i);
-        this->markers.pop_back();
+    vector<FoundMarker>::size_type i;
+    while((i = markers.size()) > 0) {
+        FoundMarker next_marker = markers[i];
+        markers.pop_back();
         bool found = false;
 
-        for(int x = 0; x < this->final_targets.size(); x++) {
-            FoundTarget t = this->final_targets.at(i);
-            if(next_marker.get_radius() > t.get_average_radius() * MIN_TARGET_SIZE_RATIO
-                && next_marker.get_radius() < t.get_average_radius() * MAX_TARGET_SIZE_RATIO) {
-                if(t.is_close(next_marker)) {
-                    t.add_marker(next_marker);
+        for(vector<FoundTarget>::size_type x = 0; x < final_targets.size(); x++) {
+        // for(vector<FoundTarget>::iterator x = final_targets.begin(); x < final_targets.end(); x++) {
+            FoundTarget t = final_targets[x];
+            if(next_marker.radius() > t.getAveRadius() * MINTARGETSIZERATIO
+                && next_marker.radius() < t.getAveRadius() * MAXTARGETSIZERATIO) {
+                if(t.isClose(next_marker)) {
+                    t.addMarker(next_marker);
                     found = true;
                     break;
                 }
@@ -598,334 +500,213 @@ void TargetFinder::group_targets() {
         }
 
         if(!found) {
-            FoundTarget new_t = FoundTarget(this->input_mat->rows, this->input_mat->cols);
-            new_t.add_marker(next_marker);
-            this->final_targets.push_back(new_t);
+            FoundTarget new_t = FoundTarget(input_mat->rows, input_mat->cols);
+            new_t.addMarker(next_marker);
+            final_targets.push_back(new_t);
         }
     }
 }
 
 
-void TargetFinder::refine_target_vertically(Mat *input_mat, Mat *output_mat) {
+void TargetFinder::refineTargetVertically(Mat *input_mat, Mat *output_mat) {
+    DEBUGPRINT("refineTargetVertically, markers: " << markers.size());
     vector<FoundMarker> final_markers;
-    for(int i = 0; i < this->markers.size(); i++) {
-        int valid_sequences = 0;
-        FoundMarker m = this->markers.at(i);
-
-        for(int x = m.get_center_x() - (int)((m.get_center_radius() + 1) / 2);
-            x <= m.get_center_x() + (int)((m.get_center_radius() + 1) / 2); x++) {
-            if((double) m.get_valid_y_count() / m.get_center_radius() > VALID_ROWS_TO_CENTER_RATIO) {
-                if(this->check_vertical_sequence(x, m.get_center_y(), m.get_radius(),
-                                                 input_mat, output_mat)) {
-                    valid_sequences++;
+    for (vector<FoundMarker>::size_type i = 0; i < markers.size(); i++){
+    // for(vector<FoundMarker>::iterator i = markers.begin(); i < markers.end(); i++) {
+        FoundMarker m = markers[i];
+        int validSequences = 0;
+        //for (int x = (int) m.getCenterX()-(int)((m.centerRadius()+1)/2);
+        //     x <= m.getCenterX()+(int)((m.centerRadius()+1)/2); x++){
+        for(int x = m.leftx; x < m.rightx; x++) {
+            // if there are not at least 1/10 maximum valid center rows compared to the size of the center then not a target
+            DEBUGPRINT("refineTargetVertically, i: " << i << ", x: " << x << ", centerx: " <<
+                                                                               m.getCenterX() << ", center_radius: " <<
+                                                                                                 m.centerRadius() << ", valid_y_count: " <<
+                                                                                                                     m.getValidyCount() << ", firstValidy: " << m.firstValidy << ", lastValidy: " << m.lastValidy);
+            if (((double) m.getValidyCount())/ m.centerRadius() > VALID_ROWS_TO_CENTER_RATIO){
+                DEBUGPRINT("refineTargetVertically, valid center rows, i: " << i);
+                if (checkVerticalSequence(x, (int) m.getCenterY(),
+                                          (int) m.radius(), input_mat,
+                                          output_mat)) {
+                    validSequences++;
                 }
             }
         }
 
-        if(valid_sequences >= 1) {
+        if (validSequences >= 1){
+            DEBUGPRINT("refineTargetVertically, i: " << i << ", validSequences: " << validSequences);
             final_markers.push_back(m);
         }
     }
 
-    this->markers = final_markers;
+    // markers = final_markers;
+    DEBUGPRINT("end of refineTargetVertically, final_markers: " << final_markers.size());
+    markers.clear();
+    for(vector<FoundMarker>::size_type i = 0; i < final_markers.size(); i++) {
+    // for(vector<FoundMarker>::iterator i = final_markers.begin(); i < final_markers.end(); i++) {
+        markers.push_back(final_markers[i]);
+    }
+    DEBUGPRINT("end of refineTargetVertically, markers: " << markers.size());
 }
 
 
-Mat TargetFinder::recognise_target(Mat *input_mat) {
-    this->markers.clear();
+Mat TargetFinder::recogniseTarget(Mat *input_mat) {
+    markers.clear();
     int width = input_mat->cols;
     int height = input_mat->rows;
 
     Mat output_mat = Mat(height, width, CV_8UC3);
+    //cvtColor(*input_mat, output_mat, COLOR_GRAY2BGR);
 
-    for(int h = 0; h < height; h++) {
-        this->left_black = 0;
-        this->left_white = 0;
-        this->center_black = 0;
-        this->right_white = 0;
-        this->right_black = 0;
+    for(int h=0; h<height; h++) {
 
-        int w = 0;
+        leftBlack = 0;
+        leftWhite = 0;
+        centerBlack = 0;
+        rightWhite = 0;
+        rightBlack = 0;
         uchar* p = input_mat->ptr(h);
         uchar* o = output_mat.ptr(h);
-        uchar current_colour = p[w];
-        int current_count = 1;
 
-        while(!this->headless && w < width) {
+        // process a row - copy to the output.  Need to be done before the 
+        // target algorithm because target size may extend beyond the current pixel (edge of target)
+        int w=0;
+        while(!headless && w < width) {
             uchar pixel = p[w];
-            // uchar pixel = get_pixel(input_mat, h, w, 0);
             if (pixel == 255) {
                 o[3 * w] = 255;
-                o[3 * w + 1] = 255;
-                o[3 * w + 2] = 255;
-                /* set_pixel(&output_mat, h, w, 0, 255);
-                set_pixel(&output_mat, h, w, 1, 255);
-                set_pixel(&output_mat, h, w, 2, 255); */
+                o[(3 * w) + 1] = 255;
+                o[(3 * w) + 2] = 255;
             }
             else if (pixel == 0) {
                 o[3 * w] = 128;
-                o[3 * w + 1] = 128;
-                o[3 * w + 2] = 128;
-                /* set_pixel(&output_mat, h, w, 0, 0);
-                set_pixel(&output_mat, h, w, 1, 0);
-                set_pixel(&output_mat, h, w, 2, 0); */
+                o[(3 * w) + 1] = 128;
+                o[(3 * w) + 2] = 128;
             } else {
                 o[3 * w] = 0;
-                o[3 * w + 1] = 0;
-                o[3 * w + 2] = 0;
-                /* set_pixel(&output_mat, h, w, 0, 128);
-                set_pixel(&output_mat, h, w, 1, 128);
-                set_pixel(&output_mat, h, w, 2, 128); */
+                o[(3 * w) + 1] = 0;
+                o[(3 * w) + 2] = 0;
             }
             w++;
         }
 
-        w = 0;
-        while(w < width) {
-            uchar pixel = p[w];
-            // uchar pixel = get_pixel(input_mat, h, w, 0);
-            if(pixel != current_colour) {
-                if(current_colour == 0) {
-                    this->left_black = this->left_white;
-                    this->left_white = this->center_black;
-                    this->center_black = this->right_white;
-                    this->right_black = current_count;
+        // process a row
+        w=0;
+        uchar currentColor = p[w];
+        int currentCount = 1;
 
-                    if(this->check_sequence(w - 1, h)) {
-                        int center_start = w - (this->right_black + this->right_white
-                                                + this->center_black + this->left_erosion) + 1;
-                        int center_end = w - (this->right_black + this->right_white)
-                                         + this->right_erosion;
-                        int left_x = w - (this->right_black + this->right_white
-                                          + this->center_black + this->left_white
-                                          + this->left_black + this->left_erosion) + 1;
-                        int right_x = w + this->right_erosion;
-                        this->update_targets(h, center_start, center_end, left_x, right_x);
-                        if(!this->headless) {
-                            this->colour_horizontal_target(w - 1, h, &output_mat);
-                        }
+        while (w < width){
+            uchar pixel = p[w];
+
+            if (pixel != currentColor){
+
+                if (currentColor == 0){ // white pixel found after black sequence
+
+                    leftBlack = leftWhite;
+                    leftWhite = centerBlack;
+                    centerBlack = rightWhite;
+                    rightWhite = rightBlack;
+                    rightBlack = currentCount; //actually is a black sequence
+
+                    if (checkSequence(w - 1, h)){
+                        int centerStart = w-(rightBlack +rightWhite +centerBlack)+1;
+                        int centerEnd = w-(rightBlack +rightWhite);
+                        int leftx = w-(rightBlack +rightWhite +centerBlack +leftWhite +leftBlack) + 1;
+                        int rightx = w;
+                        updateTargets(h, centerStart, centerEnd, leftx, rightx); // row, center-left and center-right
+                        colourHorizTarget(w - 1, h, &output_mat);
                     }
-                } else {
-                    this->left_black = this->left_white;
-                    this->left_white = this->center_black;
-                    this->center_black = this->right_white;
-                    this->right_white = this->right_black;
-                    this->right_black = current_count;
+                } else { // black pixel found after white sequence 
+                    leftBlack = leftWhite;
+                    leftWhite = centerBlack;
+                    centerBlack = rightWhite;
+                    rightWhite = rightBlack;
+                    rightBlack = currentCount; //actually a white sequence
                 }
 
-                current_colour = pixel;
-                current_count = 0;
+                currentColor = pixel;
+                currentCount = 0;
             }
 
-            current_count++;
-            w++;
-        }
-    }
-
-    output_mat.ptr(10)[32] = 255;
-    // set_pixel(&output_mat, 10, 10, 2, 255);
+            currentCount++;
+            w++; //next pixel
+        } // w
+    } // h	
 
     return output_mat;
 }
 
 
-void TargetFinder::colour_horizontal_target(int w, int h, Mat *mat) {
-    int left_black_start = w - (this->right_black + this->right_white
-                                + this->center_black + this->left_white
-                                + this->left_black) + 1;
-    int left_black_end = w - (this->right_black + this->right_white
-                              + this->center_black + this->left_white);
-    int center_start = w - (this->right_black + this->right_white
-                            + this->center_black) + 1;
-    int center_end = w - (this->right_black + this->right_white);
-    int right_black_start = w - (this->right_black) + 1;
+void TargetFinder::colourHorizTarget(int w, int h, Mat *mat) {
+    int left_black_start = w - (rightBlack + rightWhite
+                                + centerBlack + leftWhite
+                                + leftBlack) + 1;
+    int left_black_end = w - (rightBlack + rightWhite
+                              + centerBlack + leftWhite);
+    int center_start = w - (rightBlack + rightWhite
+                            + centerBlack) + 1;
+    int center_end = w - (rightBlack + rightWhite);
+    int right_black_start = w - (rightBlack) + 1;
     int right_black_end = w;
 
-    // uchar* p = mat->ptr(h);
     for(int i = left_black_start; i <= left_black_end; i++) {
-        set_pixel(mat, h, i, 2, 192);
-        // p[i + 2] = 192;
+        set_pixel_safe(mat, h, i, 2, 192);
     }
     for(int i = center_start; i <= center_end; i++) {
-        set_pixel(mat, h, i, 2, 255);
-        // p[i + 2] = 255;
+        set_pixel_safe(mat, h, i, 2, 255);
     }
     for(int i = right_black_start; i <= right_black_end; i++) {
-        set_pixel(mat, h, i, 2, 64);
-        // p[i + 2] = 64;
-    }
-
-    if(this->left_erosion >= 0) {
-        for(int i = 1; i <= this->left_erosion; i++) {
-            set_pixel(mat, h, left_black_start - i, 2, 128);
-            set_pixel(mat, h, left_black_start - i, 1, 0);
-            set_pixel(mat, h, left_black_start - i, 0, 0);
-            set_pixel(mat, h, center_start - i, 2, 128);
-            set_pixel(mat, h, center_start - i, 1, 0);
-            set_pixel(mat, h, center_start - i, 0, 0);
-            set_pixel(mat, h, left_black_end + i, 2, 128);
-            set_pixel(mat, h, left_black_end + i, 1, 0);
-            set_pixel(mat, h, left_black_end + i, 0, 0);
-            /* p[left_black_start - i + 2] = 128;
-            p[left_black_start - i + 1] = 0;
-            p[center_start - i + 2] = 128;
-            p[center_start - i + 1] = 0;
-            p[left_black_end - i + 2] = 128;
-            p[left_black_end - i + 1] = 0; */
-        }
-    } else {
-        for(int i = this->left_erosion; i <= -1; i++) {
-            set_pixel(mat, h, left_black_start + i, 2, 128);
-            set_pixel(mat, h, left_black_start + i, 1, 0);
-            set_pixel(mat, h, left_black_start + i, 0, 0);
-            set_pixel(mat, h, center_start + i, 2, 128);
-            set_pixel(mat, h, center_start + i, 1, 0);
-            set_pixel(mat, h, center_start + i, 0, 0);
-            set_pixel(mat, h, left_black_end - i, 2, 128);
-            set_pixel(mat, h, left_black_end - i, 1, 0);
-            set_pixel(mat, h, left_black_end - i, 0, 0);
-            /* p[left_black_start + i + 2] = 128;
-            p[left_black_start + i + 1] = 0;
-            p[center_start + i + 2] = 128;
-            p[center_start + i + 1] = 0;
-            p[left_black_end - i + 2] = 128;
-            p[left_black_end - i + 1] = 0; */
-        }
-    }
-
-    if(this->right_erosion >= 0) {
-        for(int i = 1; i <= this->right_erosion; i++) {
-            set_pixel(mat, h, right_black_end - i, 2, 128);
-            set_pixel(mat, h, right_black_end - i, 1, 0);
-            set_pixel(mat, h, right_black_end - i, 0, 0);
-            set_pixel(mat, h, center_end + i, 2, 128);
-            set_pixel(mat, h, center_end + i, 1, 0);
-            set_pixel(mat, h, center_end + i, 0, 0);
-            set_pixel(mat, h, right_black_start + i, 2, 128);
-            set_pixel(mat, h, right_black_start + i, 1, 0);
-            set_pixel(mat, h, right_black_start + i, 0, 0);
-            /* p[right_black_end - i + 2] = 128;
-            p[right_black_end - i + 1] = 0;
-            p[center_end + i + 2] = 128;
-            p[center_end + i + 1] = 0;
-            p[right_black_start + i + 2] = 128;
-            p[right_black_start + i + 1] = 0; */
-        }
+        set_pixel_safe(mat, h, i, 2, 64);
     }
 }
 
 
-void TargetFinder::colour_vertical_target(int w, int h, Mat *mat) {
-    int left_black_start = h - (this->right_black + this->right_white
-                                + this->center_black + this->left_white
-                                + this->left_black) + 1;
-    int left_black_end = h - (this->right_black + this->right_white
-                              + this->left_white);
-    int center_start = h - (this->right_black + this->right_white
-                            + this->center_black) + 1;
-    int center_end = h - (this->right_black + this->right_white);
-    int right_black_start = h - (this->right_black) + 1;
-    int right_black_end = h;
+void TargetFinder::colourVerticalTarget(int w, int h, Mat *mat) {
+    int leftBlackStart = h-(rightBlack +rightWhite +centerBlack +leftWhite +
+                                                                                   leftBlack)+1;
+    int leftBlackEnd = h-(rightBlack +rightWhite +centerBlack +leftWhite);
+    int centerStart = h-(rightBlack +rightWhite +centerBlack)+1;
+    int centerEnd = h-(rightBlack +rightWhite);
+    int rightBlackStart = h-(rightBlack)+1;
+    int rightBlackEnd = h;
 
-    for(int i = right_black_start; i <= right_black_end; i++) {
-        // mat->ptr(i)[w + 1] = 64;
-        set_pixel(mat, i, w, 1, 64);
-    }
-    for(int i = center_start; i <= center_end; i++) {
-        set_pixel(mat, i, w, 1, 255);
-        // mat->ptr(i)[w + 1] = 255;
-    }
-    for(int i = left_black_start; i <= left_black_end; i++) {
-        set_pixel(mat, i, w, 1, 192);
-        // mat->ptr(i)[w + 1] = 192;
+    for (int i = rightBlackStart;  i<=rightBlackEnd; i++){
+        set_pixel3(mat, i, w, 255, 64, 128);
     }
 
-    if(this->left_erosion >= 0) {
-        for(int i = 1; i <= this->left_erosion; i++) {
-            set_pixel(mat, left_black_start - i, w, 1, 0);
-            set_pixel(mat, left_black_start - i, w, 0, 128);
-            set_pixel(mat, center_start - i, w, 1, 0);
-            set_pixel(mat, center_start - i, w, 0, 128);
-            set_pixel(mat, left_black_end + i, w, 1, 0);
-            set_pixel(mat, left_black_end + i, w, 0, 128);
-            /* mat->ptr(left_black_start - i)[w + 1] = 0;
-            mat->ptr(left_black_start - i)[w] = 128;
-            mat->ptr(center_start - i)[w + 1] = 0;
-            mat->ptr(center_start - i)[w] = 128;
-            mat->ptr(left_black_end + i)[w + 1] = 128;
-            mat->ptr(left_black_end + i)[w] = 0; */
-        }
-    } else {
-        for(int i = this->left_erosion; i <= -1; i++) {
-            set_pixel(mat, left_black_start + i, w, 1, 0);
-            set_pixel(mat, left_black_start + i, w, 0, 128);
-            set_pixel(mat, center_start + i, w, 1, 0);
-            set_pixel(mat, center_start + i, w, 0, 128);
-            set_pixel(mat, left_black_end - i, w, 1, 0);
-            set_pixel(mat, left_black_end - i, w, 0, 128);
-            /* mat->ptr(left_black_start + i)[w + 1] = 0;
-            mat->ptr(left_black_start + i)[w] = 128;
-            mat->ptr(center_start + i)[w + 1] = 0;
-            mat->ptr(center_start + i)[w + 1] = 128;
-            mat->ptr(left_black_end - i)[w + 1] = 128;
-            mat->ptr(left_black_end - i)[w] = 0; */
-        }
+    for (int i = centerStart;  i<=centerEnd; i++){
+        set_pixel3(mat, i, w, 128, 255, 0);
     }
 
-    if(this->right_erosion >= 0) {
-        for(int i = 1; i <= this->right_erosion; i++) {
-            set_pixel(mat, right_black_end + i, w, 1, 0);
-            set_pixel(mat, right_black_end + i, w, 0, 128);
-            set_pixel(mat, center_end + i, w, 1, 0);
-            set_pixel(mat, center_end + i, w, 0, 128);
-            set_pixel(mat, right_black_start - i, w, 1, 0);
-            set_pixel(mat, right_black_start - i, w, 0, 128);
-            /* mat->ptr(right_black_end + i)[w + 1] = 0;
-            mat->ptr(right_black_end + i)[w] = 128;
-            mat->ptr(center_end + i)[w + 1] = 0;
-            mat->ptr(center_end + i)[w] = 128;
-            mat->ptr(right_black_start - i)[w + 1] = 0;
-            mat->ptr(right_black_start - i)[w] = 128; */
-        }
-    } else {
-        for(int i = this->right_erosion; i <= -1; i++) {
-            set_pixel(mat, right_black_end - i, w, 1, 0);
-            set_pixel(mat, right_black_end - i, w, 0, 128);
-            set_pixel(mat, center_end - i, w, 1, 0);
-            set_pixel(mat, center_end - i, w, 0, 128);
-            set_pixel(mat, right_black_start + i, w, 1, 0);
-            set_pixel(mat, right_black_start + i, w, 0, 128);
-            /* mat->ptr(right_black_end - i)[w + 1] = 0;
-            mat->ptr(right_black_end - i)[w] = 128;
-            mat->ptr(center_end - i)[w + 1] = 0;
-            mat->ptr(center_end - i)[w] = 128;
-            mat->ptr(right_black_start + i)[w + 1] = 0;
-            mat->ptr(right_black_start + i)[w] = 128; */
-        }
+    for (int i = leftBlackStart;  i<=leftBlackEnd; i++){
+        set_pixel3(mat, i, w, 0, 0, 192);
     }
 }
 
 
-void TargetFinder::mark_target_centers(Mat *mat) {
-    for(int i = 0; i < this->markers.size(); i++) {
-        FoundMarker m = this->markers.at(i);
-        m.mark_center(mat);
+void TargetFinder::markTargetCenters(Mat *mat) {
+    DEBUGPRINT("markTargetCenters, markers: " << markers.size());
+    for(vector<FoundMarker>::size_type i = 0; i < markers.size(); i++) {
+    // for(vector<FoundMarker>::iterator i = markers.begin(); i < markers.end(); i++) {
+        FoundMarker m = markers[i];
+        m.markCenter(mat);
     }
 }
 
 
-vector<FoundTarget> TargetFinder::do_target_recognition(Mat *input_mat, Mat *output_mat) {
-    this->final_targets.clear();
+vector<FoundTarget> TargetFinder::doTargetRecognition(Mat *input_mat,
+                                                      Mat *output_mat) {
+    final_targets.clear();
     IMDEBUG("stage0", *output_mat);
 
-    *output_mat = this->recognise_target(input_mat);
+    *output_mat = recogniseTarget(input_mat);
     IMDEBUG("stage1", *output_mat);
 
-    this->refine_target_vertically(input_mat, output_mat);
-    this->mark_target_centers(output_mat);
-    this->group_targets();
-    this->validate_targets();
-    this->calculate_geometry();
+    refineTargetVertically(input_mat, output_mat);
+    markTargetCenters(output_mat);
+    groupTargets();
+    validateTargets();
+    calculateGeometry();
     IMDEBUG("stage2", *output_mat);
 
     #ifdef DEBUG_EXTREME
@@ -933,12 +714,12 @@ vector<FoundTarget> TargetFinder::do_target_recognition(Mat *input_mat, Mat *out
     vector<Vec3f> circles;
     HoughCircles(*input_mat, circles, CV_HOUGH_GRADIENT, 1, input_mat->rows / 16, 255, 50, 0, 0);
     for(int i = 0; i < circles.size(); i++) {
-        Point center(cvRound(circles.at(i)[0]), cvRound(circles.at(i)[1]));
-        int radius = cvRound(circles.at(i)[2]);
+        Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+        int radius = cvRound(circles[i][2]);
         circle(*output_mat, center, radius, Scalar(255, 0, 0), 3, 8, 0);
     }
     #endif
     IMDEBUG("stage3", *output_mat);
 
-    return this->final_targets;
+    return final_targets;
 }
