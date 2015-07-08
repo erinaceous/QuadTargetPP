@@ -3,6 +3,7 @@
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" assignedExecutableTargets="true" buildAllGenerated="true">
     <generated>
       <config projectName="QuadTarget__" targetName="QuadTarget__" />
+      <config projectName="QuadTargetPlusPlus" targetName="QuadTargetStub" />
       <config projectName="QuadTargetPlusPlus" targetName="QuadTarget" />
     </generated>
   </component>
@@ -12,7 +13,15 @@
     </ADDITIONAL_GENERATION_ENVIRONMENT>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="732ccd56-31ff-481f-a3f9-2631a1896955" name="Default" comment="Slightly more working">
+    <list default="true" id="732ccd56-31ff-481f-a3f9-2631a1896955" name="Default" comment="Replaced pretty much everything with Neal's original code (translated to C++ only minimally) plus improved pixel getting/setting, but still not working right!">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/Marker.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/Marker.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/Target.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/Target.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/TargetFinder_orig.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/TargetFinder_orig.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/stub.cpp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CMakeLists.txt" afterPath="$PROJECT_DIR$/CMakeLists.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TargetFinder.cpp" afterPath="$PROJECT_DIR$/src/TargetFinder.cpp" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TargetFinder.h" afterPath="$PROJECT_DIR$/src/TargetFinder.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.ini" afterPath="$PROJECT_DIR$/config.ini" />
@@ -37,14 +46,60 @@
     <favorites_list name="QuadTarget++" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5604003">
+    <splitter split-orientation="horizontal" split-proportion="0.5110794">
       <split-first>
         <leaf>
-          <file leaf-file-name="TargetFinder.cpp" pinned="false" current-in-tab="true">
+          <file leaf-file-name="TargetFinder_orig.cpp" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="0.31106243">
+                  <caret line="458" column="18" selection-start-line="458" selection-start-column="18" selection-end-line="458" selection-end-column="18" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="TargetFinder.cpp" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="3.2775424">
-                  <caret line="182" column="0" selection-start-line="182" selection-start-column="0" selection-end-line="182" selection-end-column="0" />
+                <state vertical-scroll-proportion="0.0">
+                  <caret line="79" column="35" selection-start-line="79" selection-start-column="35" selection-end-line="79" selection-end-column="35" />
+                  <folding>
+                    <element signature="e#105#130#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="stub.cpp" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/stub.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="0.0">
+                  <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+                  <folding>
+                    <element signature="e#0#25#0" expanded="true" />
+                    <element signature="e#365#389#0" expanded="true" />
+                    <marker date="1436329061875" expanded="true" signature="333:1046" placeholder="{...}" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Target.cpp" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/Target.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="0.0">
+                  <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="6" selection-end-column="3" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Marker.cpp" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/Marker.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state vertical-scroll-proportion="0.0">
+                  <caret line="49" column="64" selection-start-line="49" selection-start-column="64" selection-end-line="49" selection-end-column="64" />
                   <folding />
                 </state>
               </provider>
@@ -56,21 +111,21 @@
         <splitter split-orientation="vertical" split-proportion="0.38501027">
           <split-first>
             <leaf>
-              <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="false">
+              <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state vertical-scroll-proportion="0.0">
-                      <caret line="0" column="35" selection-start-line="0" selection-start-column="35" selection-end-line="0" selection-end-column="35" />
+                    <state vertical-scroll-proportion="0.6979472">
+                      <caret line="14" column="53" selection-start-line="14" selection-start-column="53" selection-end-line="14" selection-end-column="53" />
                       <folding />
                     </state>
                   </provider>
                 </entry>
               </file>
-              <file leaf-file-name="config.ini" pinned="false" current-in-tab="true">
+              <file leaf-file-name="config.ini" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/config.ini">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state vertical-scroll-proportion="0.4516129">
-                      <caret line="50" column="32" selection-start-line="50" selection-start-column="32" selection-end-line="50" selection-end-column="32" />
+                    <state vertical-scroll-proportion="0.0">
+                      <caret line="7" column="8" selection-start-line="7" selection-start-column="8" selection-end-line="7" selection-end-column="8" />
                       <folding />
                     </state>
                   </provider>
@@ -80,12 +135,26 @@
           </split-first>
           <split-second>
             <leaf>
-              <file leaf-file-name="main.cpp" pinned="false" current-in-tab="true">
+              <file leaf-file-name="main.cpp" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/src/main.cpp">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state vertical-scroll-proportion="-3.00177">
-                      <caret line="33" column="25" selection-start-line="33" selection-start-column="25" selection-end-line="33" selection-end-column="25" />
-                      <folding />
+                    <state vertical-scroll-proportion="0.0">
+                      <caret line="102" column="25" selection-start-line="102" selection-start-column="25" selection-end-line="102" selection-end-column="31" />
+                      <folding>
+                        <element signature="e#420#439#0" expanded="true" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="TargetFinder_orig.h" pinned="false" current-in-tab="true">
+                <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.h">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state vertical-scroll-proportion="0.4265873">
+                      <caret line="190" column="29" selection-start-line="190" selection-start-column="29" selection-end-line="190" selection-end-column="29" />
+                      <folding>
+                        <element signature="e#220#314#0" expanded="true" />
+                      </folding>
                     </state>
                   </provider>
                 </entry>
@@ -93,10 +162,35 @@
               <file leaf-file-name="TargetFinder.h" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/src/TargetFinder.h">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state vertical-scroll-proportion="-21.081966">
-                      <caret line="190" column="18" selection-start-line="190" selection-start-column="18" selection-end-line="190" selection-end-column="18" />
+                    <state vertical-scroll-proportion="0.0">
+                      <caret line="23" column="29" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
                       <folding>
-                        <element signature="e#323#378#0" expanded="true" />
+                        <element signature="e#190#219#0" expanded="true" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="Marker.h" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/Marker.h">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state vertical-scroll-proportion="0.0">
+                      <caret line="44" column="29" selection-start-line="44" selection-start-column="29" selection-end-line="44" selection-end-column="29" />
+                      <folding>
+                        <marker date="1436317095574" expanded="true" signature="272:1346" placeholder="{...}" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="Target.h" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/src/Target.h">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state vertical-scroll-proportion="0.0">
+                      <caret line="11" column="29" selection-start-line="11" selection-start-column="29" selection-end-line="11" selection-end-column="29" />
+                      <folding>
+                        <marker date="1436279084793" expanded="true" signature="322:362" placeholder="..." />
+                        <marker date="1436279084793" expanded="true" signature="379:594" placeholder="{...}" />
                       </folding>
                     </state>
                   </provider>
@@ -123,11 +217,18 @@
         <option value="$PROJECT_DIR$/../QuadTarget++/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/src/TargetModel.h" />
         <option value="$PROJECT_DIR$/src/TargetModel.cpp" />
-        <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Target.cpp" />
+        <option value="$PROJECT_DIR$/src/Target.h" />
+        <option value="$PROJECT_DIR$/src/Marker.cpp" />
         <option value="$PROJECT_DIR$/src/main.cpp" />
-        <option value="$PROJECT_DIR$/config.ini" />
+        <option value="$PROJECT_DIR$/src/Marker.h" />
+        <option value="$PROJECT_DIR$/src/stub.cpp" />
         <option value="$PROJECT_DIR$/src/TargetFinder.h" />
         <option value="$PROJECT_DIR$/src/TargetFinder.cpp" />
+        <option value="$PROJECT_DIR$/src/TargetFinder_orig.cpp" />
+        <option value="$PROJECT_DIR$/src/TargetFinder_orig.h" />
+        <option value="$PROJECT_DIR$/config.ini" />
+        <option value="$PROJECT_DIR$/CMakeLists.txt" />
       </list>
     </option>
   </component>
@@ -260,6 +361,7 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src" />
       <recent name="$PROJECT_DIR$/../QuadTarget++/src" />
     </key>
   </component>
@@ -285,9 +387,14 @@
       <envs />
       <method />
     </configuration>
-    <list size="2">
+    <configuration default="false" name="QuadTargetStub" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS="FALSE" PROJECT_NAME="QuadTargetPlusPlus" TARGET_NAME="QuadTargetStub" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="QuadTargetPlusPlus" RUN_TARGET_NAME="QuadTargetStub">
+      <envs />
+      <method />
+    </configuration>
+    <list size="3">
       <item index="0" class="java.lang.String" itemvalue="Application.QuadTarget" />
       <item index="1" class="java.lang.String" itemvalue="Application.Build All" />
+      <item index="2" class="java.lang.String" itemvalue="Application.QuadTargetStub" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -349,21 +456,27 @@
       <option name="project" value="LOCAL" />
       <updated>1435665467479</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Replaced pretty much everything with Neal's original code (translated to C++ only minimally) plus improved pixel getting/setting, but still not working right!">
+      <created>1436216894354</created>
+      <option name="number" value="00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1436216894355</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="3" y="30" width="1914" height="1047" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26907" sideWeight="0.37679672" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22518286" sideWeight="0.4322382" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295688" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" x="941" y="367" width="773" height="423" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295688" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295688" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="696" y="428" width="842" height="416" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26907" sideWeight="0.6232033" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22518286" sideWeight="0.5677618" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.399384" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -375,6 +488,26 @@
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
+    <layout-to-restore>
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295688" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" x="941" y="367" width="773" height="423" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295688" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="true" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295688" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="696" y="428" width="842" height="416" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26907" sideWeight="0.37679672" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26907" sideWeight="0.6232033" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.399384" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+    </layout-to-restore>
   </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
@@ -396,17 +529,18 @@
     <MESSAGE value="More efficient pixel access. Slightly more working code." />
     <MESSAGE value="Can change algorithm params via config file now." />
     <MESSAGE value="Slightly more working" />
-    <option name="LAST_COMMIT_MESSAGE" value="Slightly more working" />
+    <MESSAGE value="Replaced pretty much everything with Neal's original code (translated to C++ only minimally) plus improved pixel getting/setting, but still not working right!" />
+    <option name="LAST_COMMIT_MESSAGE" value="Replaced pretty much everything with Neal's original code (translated to C++ only minimally) plus improved pixel getting/setting, but still not working right!" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <option name="time" value="2" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="894" column="45" selection-start-line="894" selection-start-column="45" selection-end-line="894" selection-end-column="45" />
@@ -434,16 +568,18 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="37" column="36" selection-start-line="37" selection-start-column="36" selection-end-line="37" selection-end-column="36" />
-          <folding />
+          <folding>
+            <element signature="e#420#439#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TargetFinder.h">
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.h">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#323#378#0" expanded="true" />
+            <element signature="e#220#314#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -455,7 +591,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="337" column="44" selection-start-line="337" selection-start-column="39" selection-end-line="337" selection-end-column="44" />
@@ -483,16 +619,18 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="9" column="0" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#420#439#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TargetFinder.h">
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.h">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#323#378#0" expanded="true" />
+            <element signature="e#220#314#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -511,7 +649,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="742" column="30" selection-start-line="742" selection-start-column="30" selection-end-line="742" selection-end-column="30" />
@@ -531,16 +669,18 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="47" column="20" selection-start-line="47" selection-start-column="20" selection-end-line="47" selection-end-column="20" />
-          <folding />
+          <folding>
+            <element signature="e#420#439#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TargetFinder.h">
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.h">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#323#378#0" expanded="true" />
+            <element signature="e#220#314#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -549,7 +689,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#420#439#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -565,7 +707,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="1" column="12" selection-start-line="1" selection-start-column="12" selection-end-line="1" selection-end-column="12" />
-          <folding />
+          <folding>
+            <element signature="e#420#439#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -581,7 +725,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#420#439#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -599,44 +745,115 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+    <entry file="file://$PROJECT_DIR$/src/Target.h">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="35" selection-start-line="0" selection-start-column="35" selection-end-line="0" selection-end-column="35" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config.ini">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.4516129">
-          <caret line="50" column="32" selection-start-line="50" selection-start-column="32" selection-end-line="50" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/TargetFinder.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-21.081966">
-          <caret line="190" column="18" selection-start-line="190" selection-start-column="18" selection-end-line="190" selection-end-column="18" />
+          <caret line="11" column="29" selection-start-line="11" selection-start-column="29" selection-end-line="11" selection-end-column="29" />
           <folding>
-            <element signature="e#323#378#0" expanded="true" />
+            <marker date="1436279084793" expanded="true" signature="322:362" placeholder="..." />
+            <marker date="1436279084793" expanded="true" signature="379:594" placeholder="{...}" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
+    <entry file="file://$PROJECT_DIR$/src/Target.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="3.2775424">
-          <caret line="182" column="0" selection-start-line="182" selection-start-column="0" selection-end-line="182" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="6" selection-end-column="3" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Marker.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="49" column="64" selection-start-line="49" selection-start-column="64" selection-end-line="49" selection-end-column="64" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.00177">
-          <caret line="33" column="25" selection-start-line="33" selection-start-column="25" selection-end-line="33" selection-end-column="25" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="102" column="25" selection-start-line="102" selection-start-column="25" selection-end-line="102" selection-end-column="31" />
+          <folding>
+            <element signature="e#420#439#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Marker.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="44" column="29" selection-start-line="44" selection-start-column="29" selection-end-line="44" selection-end-column="29" />
+          <folding>
+            <marker date="1436317095574" expanded="true" signature="272:1346" placeholder="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/stub.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#25#0" expanded="true" />
+            <element signature="e#365#389#0" expanded="true" />
+            <marker date="1436329061875" expanded="true" signature="333:1046" placeholder="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="23" column="29" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
+          <folding>
+            <element signature="e#190#219#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="79" column="35" selection-start-line="79" selection-start-column="35" selection-end-line="79" selection-end-column="35" />
+          <folding>
+            <element signature="e#105#130#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.4265873">
+          <caret line="190" column="29" selection-start-line="190" selection-start-column="29" selection-end-line="190" selection-end-column="29" />
+          <folding>
+            <element signature="e#220#314#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config.ini">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="7" column="8" selection-start-line="7" selection-start-column="8" selection-end-line="7" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.6979472">
+          <caret line="14" column="53" selection-start-line="14" selection-start-column="53" selection-end-line="14" selection-end-column="53" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.31106243">
+          <caret line="458" column="18" selection-start-line="458" selection-start-column="18" selection-end-line="458" selection-end-column="18" />
           <folding />
         </state>
       </provider>

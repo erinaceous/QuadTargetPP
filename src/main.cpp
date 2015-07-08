@@ -10,7 +10,7 @@
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include "TargetFinder.h"
+#include "TargetFinder_orig.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
@@ -96,6 +96,7 @@ int main() {
     Mat output;
     int count = 0;
     while(running) {
+        DEBUGPRINT("count: " << count);
         if(cap.read(frame)) {
             // cvtColor(frame, processed, CV_BGR2GRAY);
             split(frame, yuv);
