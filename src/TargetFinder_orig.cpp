@@ -49,15 +49,16 @@ bool in_bounds(Mat* mat, int y, int x, int c) {
 
 FoundMarker::FoundMarker(int y, int centerleft, int centerright, int left_x,
                          int right_x) {
-    centerleftx = centerleft;
-    centerrightx = centerright;
-    centerx = (centerleft+centerright)/2;
-    leftx = left_x;
-    rightx = right_x;
-    firstmaxy = y;
-    lastmaxy = y;
-    firstValidy = y;
-    DEBUGPRINT("new FoundMarker, lastValidy: " << getLastValidy());
+    this->centerleftx = centerleft;
+    this->centerrightx = centerright;
+    this->centerx = (centerleft+centerright)/2;
+    this->leftx = left_x;
+    this->rightx = right_x;
+    this->firstmaxy = y;
+    this->lastmaxy = y;
+    this->firstValidy = y;
+    this->lastValidy = y;
+    DEBUGPRINT("new FoundMarker, lastValidy: " << this->getLastValidy());
 }
 
 
@@ -97,20 +98,20 @@ bool FoundMarker::xClose(int x) {
 }
 
 
-void FoundMarker::expand(const int y, const int centerleft, const int centerright,
-                         const int left_x, const int right_x) {
+void FoundMarker::expand(int y, int centerleft, int centerright,
+                         int left_x, int right_x) {
     if (centerRadius() < (centerright-centerleft)){
         // this row is closer to the center
-        centerleftx = centerleft;
-        centerrightx = centerright;
-        firstmaxy = y;
-        centerx = (int)(((double)centerrightx+centerleftx)/2);
+        this->centerleftx = centerleft;
+        this->centerrightx = centerright;
+        this->firstmaxy = y;
+        this->centerx = (int)(((double)this->centerrightx + this->centerleftx)/2);
     }
 
     if (centerRadius() == (centerright-centerleft)){
-        lastmaxy = y;
-        centerleftx = centerleft;
-        centerrightx = centerright;
+        this->lastmaxy = y;
+        this->centerleftx = centerleft;
+        this->centerrightx = centerright;
         // all centers are used to calculate the final answer to average any anomalies
         // this isn't quite right because the latest ones have more influence
         //centerx = (centerx+(centerrightx+centerleftx)/2)/2;
@@ -118,12 +119,11 @@ void FoundMarker::expand(const int y, const int centerleft, const int centerrigh
 
     if (radius() < (right_x-left_x)){
         // this row is closer to the center
-        leftx = left_x;
-        rightx = right_x;
-        firstmaxy = y;
+        this->leftx = left_x;
+        this->rightx = right_x;
+        this->firstmaxy = y;
     }
-
-    lastValidy = y;
+    this->lastValidy = y;
     DEBUGPRINT("expand called, lastValidy: " << getLastValidy() << ", firstValidy: " << getFirstValidy());
 }
 
@@ -691,6 +691,7 @@ vector<FoundTarget> TargetFinder::doTargetRecognition(Mat *input_mat,
     IMDEBUG("stage0", *output_mat);
 
     *output_mat = recogniseTarget(input_mat);
+    // *output_mat = cascadeTarget(input_mat);
     IMDEBUG("stage1", *output_mat);
 
     refineTargetsVertically(input_mat, output_mat);
@@ -712,4 +713,40 @@ vector<FoundTarget> TargetFinder::doTargetRecognition(Mat *input_mat,
     IMDEBUG("stage3", *output_mat);
 
     return final_targets;
+}
+
+
+CascadeFinder::CascadeFinder(string cascade_xml, bool set_headless) {
+    this->headless = set_headless;
+    this->classifier = CascadeClassifier(cascade_xml);
+}
+
+
+vector<FoundTarget> CascadeFinder::doTargetRecognition(Mat *input_mat,
+                                                       Mat *output_mat) {
+    final_targets.clear();
+    markers.clear();
+    vector<Rect> rects;
+    // image, vector<Rect>& objects, double scaleFactor, int minNeighbors,
+    // int flags=0, Size minSize, Size maxSize
+    this->classifier.detectMultiScale(
+            *input_mat, rects, 2.0, 2, 0, Size(3, 3), Size(512, 512)
+    );
+    for(int i=0; i<rects.size(); i++) {
+        rectangle(*output_mat, rects[i], Scalar(0, 0, 255), 2);
+        FoundMarker m = FoundMarker(
+                rects[i].y, rects[i].x, rects[i].x + rects[i].width,
+                rects[i].x, rects[i].x + rects[i].width
+        );
+        m.expand(
+                rects[i].y + rects[i].height,
+                rects[i].x, rects[i].x + rects[i].width,
+                rects[i].x, rects[i].x + rects[i].width
+        );
+        this->markers.push_back(m);
+    }
+    markTargetCenters(output_mat);
+    groupTargets();
+    calculateGeometry();
+    return this->final_targets;
 }

@@ -40,25 +40,31 @@ std::string TargetFinder::toString() {
 
 
 std::vector<Target> TargetFinder::doTargetRecognition(cv::Mat *inputMat,
-                                                      cv::Mat *outputMat) {
+                                                      cv::Mat *outputMat,
+                                                      bool debug) {
     std::vector<Target> final_targets;
     this->markers.clear();
     cv::Mat processMat;
-    inputMat->copyTo(processMat);
+    // inputMat->copyTo(processMat);
+    cv::cvtColor(*inputMat, processMat, cv::COLOR_BGR2YUV);
+    // cv::threshold(processMat, processMat, 0, 255, cv::THRESH_OTSU);
 
     float total_diff = 0.0;
     float total_avg = this->threshold;
+    unsigned char *o;
+    unsigned char *m;
 
     for(int y=0; y < inputMat->rows; y++) {
-        unsigned char *p = inputMat->ptr(y);
-        unsigned char *m = processMat.ptr(y);
-        unsigned char *o;
+        m = processMat.ptr(y);
         if (outputMat != NULL) {
             o = outputMat->ptr(y);
         }
         bool in_black = false;
         bool in_white = false;
+        bool invalid = false;
         bool has_changed = false;
+        bool start_white = false;
+        bool end_white = false;
         bool left_black = false;
         int left_black_count = 0;
         bool left_white = false;
@@ -81,9 +87,10 @@ std::vector<Target> TargetFinder::doTargetRecognition(cv::Mat *inputMat,
         float horiz_var = 0;
         float horiz_delta_abs = 0;
         for(int x=0; x < inputMat->cols; x++) {
-            horiz_diff = p[3 * x] - horiz_avg;
-            total_diff = p[3 * x] - total_avg;
+            horiz_diff = m[3 * x] - horiz_avg;
+            total_diff = m[3 * x] - total_avg;
             total_avg += (this->omega * total_diff);
+            // total_avg = m[x];
             horiz_incr = this->alpha * horiz_diff;
             horiz_avg += horiz_incr;
             horiz_var = (1 - this->alpha) * (horiz_var + horiz_diff * horiz_incr);
@@ -105,21 +112,50 @@ std::vector<Target> TargetFinder::doTargetRecognition(cv::Mat *inputMat,
                     in_white = true;
                     in_black = false;
                 }
-            } else {
-                //if(horiz_var < this->threshold) {
+            } /* else {
+                if(horiz_var < this->threshold) {
                     in_white = false;
                     in_black = false;
-                //}
+                }
+            } */
+            /* if(m[3 * x] > total_avg) {
+                in_black = false;
+                in_white = true;
+            } else {
+                in_black = true;
+                in_white = false;
+            } */
+            // in_black = m[x] == 0;
+            // in_white = m[x] == 255;
+
+
+            // Before marker, white area
+            if(in_white && !left_black && !left_white && !central_black && !right_white && !right_black && !end_white) {
+                start_white = true;
+                left_black_count = 0;
+                central_black_count = 0;
+                right_black_count = 0;
+                left_white_count = 0;
+                right_white_count = 0;
+                left_black = false;
+                central_black = false;
+                right_black = false;
+                left_white = false;
+                right_white = false;
+                end_white = false;
+                invalid = false;
             }
 
             // Start of marker, black area
-            if(in_black && !left_black && !left_white && !central_black && !right_white && !right_black) {
+            if(((in_black && start_white) || x == 0) && !left_black && !left_white && !central_black && !right_white && !right_black) {
+                start_white = false;
                 left_black = true;
                 left_x = x;
+                right_x = x;
             }
 
             // Central black area
-            if((!in_white) && left_white) {
+            if(in_black && left_white) {
                 left_black = false;
                 central_black = true;
                 right_black = false;
@@ -128,7 +164,7 @@ std::vector<Target> TargetFinder::doTargetRecognition(cv::Mat *inputMat,
             }
 
             // Right-hand black side
-            if((!in_white) && right_white) {
+            if(in_black && right_white) {
                 left_black = false;
                 central_black = false;
                 right_black = true;
@@ -137,7 +173,7 @@ std::vector<Target> TargetFinder::doTargetRecognition(cv::Mat *inputMat,
             }
 
             // White area to the left of center
-            if((!in_black) && left_black) {
+            if(in_white && left_black) {
                 left_black = false;
                 central_black = false;
                 right_black = false;
@@ -146,7 +182,7 @@ std::vector<Target> TargetFinder::doTargetRecognition(cv::Mat *inputMat,
             }
 
             // White area to the right of center
-            if((!in_black) && central_black) {
+            if(in_white && central_black) {
                 left_black = false;
                 central_black = false;
                 right_black = false;
@@ -154,27 +190,49 @@ std::vector<Target> TargetFinder::doTargetRecognition(cv::Mat *inputMat,
                 right_white = true;
             }
 
-            if((!in_white) && left_black) {
+            if(in_black && left_black) {
                 left_black_count++;
-            } else if((!in_white) && right_black) {
+            } else if(in_black && right_black) {
                 right_black_count++;
-            } else if((!in_white) && central_black) {
+            } else if(in_black && central_black) {
                 central_black_count++;
-            } else if((!in_black) && left_white) {
+            } else if(in_white && left_white) {
                 left_white_count++;
-            } else if((!in_black) && right_white) {
+            } else if(in_white && right_white) {
                 right_white_count++;
             }
 
-            // End of marker
-            if((!in_black && right_black)
-               || (!in_black && left_white && left_black)
-               || (!in_black && right_white && right_black)) {
+            // White area outside of right black side
+            if(in_white) {
+                if(right_black) {
+                    end_white = true;
+                }
+                if((left_black && left_black_count < this->min_pixel_count)
+                    || (central_black && central_black_count < this->min_pixel_count)
+                    || (left_white && left_white_count > (left_black_count + this->tolerance))
+                    || (central_black && central_black_count > ((left_black_count + this->tolerance) * 3))
+                    || (right_white && right_white_count > (left_white_count + this->tolerance)))
+                {
+                    invalid = true;
+                    end_white = true;
+                }
+            }
+            if(in_black) {
+                if((left_white && left_white_count < this->min_pixel_count)
+                        || (right_white && right_white_count < this->min_pixel_count)) {
+                    invalid = true;
+                    end_white = true;
+                }
+            }
+
+            if(end_white) {
                 left_black = false;
                 central_black = false;
                 right_black = false;
                 left_white = false;
                 right_white = false;
+                start_white = false;
+                end_white = false;
                 right_x = x;
 
                 int black_count = left_black_count + central_black_count + right_black_count;
@@ -183,8 +241,11 @@ std::vector<Target> TargetFinder::doTargetRecognition(cv::Mat *inputMat,
                 // std::cout << "black_count = " << black_count << ", white_count = " << white_count << std::endl;
                 // std::cout << "black_white_ratio = " << black_white_ratio << std::endl;
 
-                if(abs(1 - black_white_ratio) > this->black_white_ratio_threshold) {
-                    // markers.push_back(Marker(y, y, left_x, right_x));
+                if(!invalid) {
+                    if (abs(1 - black_white_ratio) >
+                        this->black_white_ratio_threshold) {
+                        markers.push_back(Marker(y, y, left_x, right_x));
+                    }
                 }
 
                 // Reset counters
@@ -245,8 +306,14 @@ std::vector<Target> TargetFinder::doTargetRecognition(cv::Mat *inputMat,
                 // std::cout << "equal elements" << std::endl;
                 continue;
             }
-            if (Marker::distance(markers[y], markers[x]) < this->inner_marker_distance) {
+            int d = Marker::distance(markers[y], markers[x]);
+            if (d < this->inner_marker_distance) {
                 markers[y].expand(markers[x]);
+                o = outputMat->ptr(markers[x].getCenterY());
+                int pos_x = markers[x].getCenterX();
+                o[3 * pos_x] = 255;
+                o[3 * pos_x + 1] = 0;
+                o[3 * pos_x + 2] = 255;
                 markers[x].invalid = true;
             }
         }
@@ -257,6 +324,16 @@ std::vector<Target> TargetFinder::doTargetRecognition(cv::Mat *inputMat,
             continue;
         }
         float r = markers[y].getRatio();
+        int x = markers[y].getCenterX();
+        for(int w = x - r; w < (x + r); w++) {
+            if(w < 0 || w > processMat.cols) {
+                continue;
+            }
+            o = outputMat->ptr(markers[y].getCenterY());
+            o[3 * w] = 255;
+            o[3 * w + 1] = 0;
+            o[3 * w + 2] = 255;
+        }
         if(r < 0 || r > this->max_marker_ratio || r < this->min_marker_ratio || isinf(r)) {
             markers[y].invalid = true;
         }
@@ -268,7 +345,7 @@ std::vector<Target> TargetFinder::doTargetRecognition(cv::Mat *inputMat,
         }
         int cy = markers[y].getCenterY();
         int cx = markers[y].getCenterX();
-        // std::cout << i++ << ": " << markers[y].toString() << std::endl;
+        std::cout << i++ << ": " << markers[y].toString() << std::endl;
         cv::circle(*outputMat, cv::Point(cx, cy), markers[y].getWidth() / 2, 0xFF00FF, -1);
     }
 

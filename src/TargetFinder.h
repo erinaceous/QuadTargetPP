@@ -22,12 +22,14 @@ namespace qtpp {
             float threshold = 0.0;
             float max_variance = 10.0;
             float alpha = 0.3;
-            float omega = 0.1;
+            float omega = 0.0001;
             float window = 5.0;
-            float black_white_ratio_threshold = 0.1;
-            int inner_marker_distance = 2;
-            float min_marker_ratio = 0.8;
-            float max_marker_ratio = 5.0;
+            float black_white_ratio_threshold = 0.3;
+            int inner_marker_distance = 15;
+            float min_marker_ratio = 0.1;
+            float max_marker_ratio = 15.0;
+            int min_pixel_count = 2;
+            int tolerance = 10;
 
             float confidence = 1.0;
             float error = 0.0;
@@ -38,7 +40,8 @@ namespace qtpp {
             void setParam(std::string param, void* value);
             std::string toString();
             std::vector<Target> doTargetRecognition(
-                    cv::Mat *inputMat, cv::Mat *outputMat=NULL);
+                    cv::Mat *inputMat, cv::Mat *outputMat=NULL,
+                    bool debug=false);
     };
 
 }

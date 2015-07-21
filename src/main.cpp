@@ -55,8 +55,8 @@ int main() {
     bool loop_video = false;
     int wait_key = pt.get<int>("gui.waitKey");
     string video_file = pt.get<string>("camera.file");
-    VideoCapture cap;
 
+    VideoCapture cap;
     if(video_file.compare("none") == 0) {
         cap = VideoCapture(pt.get<int>("camera.index"));
     } else {
@@ -70,10 +70,11 @@ int main() {
     cap.set(CV_CAP_PROP_FRAME_WIDTH, pt.get<int>("camera.width"));
     cap.set(CV_CAP_PROP_FRAME_HEIGHT, pt.get<int>("camera.height"));
     cap.set(CV_CAP_PROP_FPS, pt.get<int>("camera.fps"));
-    cap.set(CV_CAP_PROP_CONVERT_RGB, false);
+    // cap.set(CV_CAP_PROP_CONVERT_RGB, false);
 
     set_targetfinder_config(pt);
-    TargetFinder tf = TargetFinder(headless);
+    // TargetFinder tf = TargetFinder(headless);
+    CascadeFinder tf = CascadeFinder(pt.get<string>("cascade.xml"));
 
     int threshold_mode = 0;
     int threshold_value = pt.get<int>("threshold.value");
@@ -88,19 +89,24 @@ int main() {
     } else if(pt.get<string>("threshold.mode").compare("gaussian") == 0) {
         threshold_mode = 4;
     }
+    bool should_greyscale = pt.get<bool>("threshold.grey");
 
     bool running = true;
     Mat frame;
-    Mat yuv[3];
+    // Mat yuv[3];
     Mat processed;
     Mat output;
     int count = 0;
     while(running) {
         DEBUGPRINT("count: " << count);
         if(cap.read(frame)) {
-            // cvtColor(frame, processed, CV_BGR2GRAY);
-            split(frame, yuv);
-            processed = yuv[0];
+            if(should_greyscale) {
+                cvtColor(frame, processed, CV_BGR2GRAY);
+            } else {
+                frame.copyTo(processed);
+            }
+            // split(frame, yuv);
+            // processed = yuv[0];
             switch(threshold_mode) {
                 case 1:
                     threshold(processed, processed, 128, 255, THRESH_OTSU);

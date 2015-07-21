@@ -6,7 +6,7 @@
 #define QUADTARGETPLUSPLUS_TARGETFINDER_H
 
 #define RADIANS_TO_DEGREES 57.29577951308232
-//#define DEBUG_EXTREME
+// #define DEBUG_EXTREME
 
 #ifdef DEBUG_EXTREME
     #define IMDEBUG(label, img) imshow(label, img)
@@ -97,8 +97,8 @@ class FoundMarker {
         bool yClose(int y);
         bool xClose(int x);
         void expand(
-            const int y, const int centerleft, const int centerright,
-            const int left_x, const int right_x
+            int y, int centerleft, int centerright,
+            int left_x, int right_x
         );
         int getValidyCount();
         void markCenter(Mat *mat);
@@ -168,10 +168,10 @@ class TargetFinder {
      * grayscale image or colour (3-channel) image.
      */
 public:
-    TargetFinder(bool headless);
+    TargetFinder(bool headless=false);
     vector<FoundTarget> doTargetRecognition(Mat *input_mat, Mat *output_mat);
 
-private:
+protected:
     Mat* input_mat;
     double confidence = 1.0;
     double error = 0.0;
@@ -195,6 +195,15 @@ private:
     void colourHorizTarget(int w, int h, Mat *mat);
     void colourVerticalTarget(int w, int h, Mat *mat);
     void markTargetCenters(Mat *mat);
+};
+
+
+class CascadeFinder : public TargetFinder {
+    public:
+        CascadeFinder(string cascade_xml, bool set_headless=false);
+        vector<FoundTarget> doTargetRecognition(Mat *input_mat, Mat *output_mat);
+    private:
+        CascadeClassifier classifier;
 };
 
 

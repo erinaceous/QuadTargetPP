@@ -102,8 +102,12 @@ Marker Marker::expand(Marker m1, Marker m2) {
 }
 
 int Marker::distance(Marker m1, Marker m2) {
-    return abs(m2.getCenterX() - m1.getCenterX()) +
-           abs(m2.getCenterY() - m2.getCenterY());
+    /* return abs(m2.getCenterX() - m1.getCenterX()) +
+           abs(m2.getCenterY() - m2.getCenterY()); */
+    return (int) sqrt(
+            pow((m1.getCenterX() - m2.getCenterX()), 2) +
+            pow((m1.getCenterY() - m2.getCenterY()), 2)
+    );
 }
 
 std::string Marker::toString() {
