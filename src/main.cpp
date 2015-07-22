@@ -73,8 +73,12 @@ int main() {
     // cap.set(CV_CAP_PROP_CONVERT_RGB, false);
 
     set_targetfinder_config(pt);
-    // TargetFinder tf = TargetFinder(headless);
-    CascadeFinder tf = CascadeFinder(pt.get<string>("cascade.xml"));
+    TargetFinder tf;
+    if(pt.get<string>("tracker.mode").compare("cascade") == 0) {
+        tf = CascadeFinder(pt.get<string>("cascade.xml"));
+    } else {
+        tf = TargetFinder(headless);
+    }
 
     int threshold_mode = 0;
     int threshold_value = pt.get<int>("threshold.value");
@@ -89,7 +93,7 @@ int main() {
     } else if(pt.get<string>("threshold.mode").compare("gaussian") == 0) {
         threshold_mode = 4;
     }
-    bool should_greyscale = pt.get<bool>("threshold.grey");
+    bool should_greyscale = pt.get<bool>("tracker.grey");
 
     bool running = true;
     Mat frame;

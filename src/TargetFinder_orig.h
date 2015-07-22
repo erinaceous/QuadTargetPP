@@ -6,7 +6,7 @@
 #define QUADTARGETPLUSPLUS_TARGETFINDER_H
 
 #define RADIANS_TO_DEGREES 57.29577951308232
-// #define DEBUG_EXTREME
+#define DEBUG_EXTREME
 
 #ifdef DEBUG_EXTREME
     #define IMDEBUG(label, img) imshow(label, img)
