@@ -162,48 +162,59 @@ public:
 };
 
 
-class TargetFinder {
+class Finder {
+    public:
+        Finder(bool headless=false);
+        virtual vector<FoundTarget> doTargetRecognition(Mat *input_mat, Mat *output_mat);
+    private:
+        bool headless;
+};
+
+class TargetFinder : public Finder {
     /**
      * Target recognition and tracking class. Operates on OpenCV Mats. Expects a
      * grayscale image or colour (3-channel) image.
      */
-public:
-    TargetFinder(bool headless=false);
-    vector<FoundTarget> doTargetRecognition(Mat *input_mat, Mat *output_mat);
+    public:
+        TargetFinder(bool headless=false);
+        vector<FoundTarget> doTargetRecognition(Mat *input_mat, Mat *output_mat);
+    protected:
+        Mat* input_mat;
+        double confidence = 1.0;
+        double error = 0.0;
+        int leftBlack, leftWhite, centerBlack, rightBlack, rightWhite;
+        vector<FoundMarker> markers;
+        vector<FoundTarget> final_targets;
+        bool found_target = false;
+        bool headless = false;
 
-protected:
-    Mat* input_mat;
-    double confidence = 1.0;
-    double error = 0.0;
-    int leftBlack, leftWhite, centerBlack, rightBlack, rightWhite;
-    vector<FoundMarker> markers;
-    vector<FoundTarget> final_targets;
-    bool found_target = false;
-    bool headless = false;
-
-    bool checkSequence(int w, int h);
-    bool checkVerticalSequence(
-            int w, int h, int radius, Mat *input_mat, Mat *output_mat
-    );
-    void updateTargets(
-            int y, int centerstart, int centerend, int leftx, int rightx
-    );
-    void calculateGeometry();
-    void groupTargets();
-    void refineTargetsVertically(Mat *input_mat, Mat *output_mat);
-    Mat recogniseTarget(Mat *input_mat);
-    void colourHorizTarget(int w, int h, Mat *mat);
-    void colourVerticalTarget(int w, int h, Mat *mat);
-    void markTargetCenters(Mat *mat);
+        bool checkSequence(int w, int h);
+        bool checkVerticalSequence(
+                int w, int h, int radius, Mat *input_mat, Mat *output_mat
+        );
+        void updateTargets(
+                int y, int centerstart, int centerend, int leftx, int rightx
+        );
+        void calculateGeometry();
+        void groupTargets();
+        void refineTargetsVertically(Mat *input_mat, Mat *output_mat);
+        Mat recogniseTarget(Mat *input_mat);
+        void colourHorizTarget(int w, int h, Mat *mat);
+        void colourVerticalTarget(int w, int h, Mat *mat);
+        void markTargetCenters(Mat *mat);
 };
 
 
 class CascadeFinder : public TargetFinder {
     public:
-        CascadeFinder(string cascade_xml, bool set_headless=false);
+        CascadeFinder(string cascade_xml, double scaleFactor=1.5,
+                      int minNeighbors=2, int minSize=3, bool set_headless=false);
         vector<FoundTarget> doTargetRecognition(Mat *input_mat, Mat *output_mat);
     private:
         CascadeClassifier classifier;
+        double scaleFactor;
+        int minNeighbors;
+        int minSize;
 };
 
 

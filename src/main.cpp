@@ -72,12 +72,19 @@ int main() {
     cap.set(CV_CAP_PROP_FPS, pt.get<int>("camera.fps"));
     // cap.set(CV_CAP_PROP_CONVERT_RGB, false);
 
+    Finder *tf;
     set_targetfinder_config(pt);
-    TargetFinder tf;
     if(pt.get<string>("tracker.mode").compare("cascade") == 0) {
-        tf = CascadeFinder(pt.get<string>("cascade.xml"));
+        DEBUGPRINT("using cascade method");
+        tf = new CascadeFinder(
+                pt.get<string>("cascade.xml"),
+                pt.get<double>("cascade.scaleFactor"),
+                pt.get<int>("cascade.minNeighbors"),
+                pt.get<int>("cascade.minSize")
+        );
     } else {
-        tf = TargetFinder(headless);
+        DEBUGPRINT("using original method");
+        tf = new TargetFinder(headless);
     }
 
     int threshold_mode = 0;
@@ -133,7 +140,7 @@ int main() {
                     break;
             }
             frame.copyTo(output);
-            vector<FoundTarget> ft = tf.doTargetRecognition(&processed, &output);
+            vector<FoundTarget> ft = tf->doTargetRecognition(&processed, &output);
             for(int i = 0; i < ft.size(); i++) {
                 cout << "frame=" << count << ",t=" << i << ",";
                 cout << ft.at(i).toString() << endl;

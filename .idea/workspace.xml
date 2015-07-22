@@ -13,7 +13,8 @@
     </ADDITIONAL_GENERATION_ENVIRONMENT>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="732ccd56-31ff-481f-a3f9-2631a1896955" name="Default" comment="urghhhhh">
+    <list default="true" id="732ccd56-31ff-481f-a3f9-2631a1896955" name="Default" comment="added ability to switch between the different tracking methods">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TargetFinder_orig.cpp" afterPath="$PROJECT_DIR$/src/TargetFinder_orig.cpp" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TargetFinder_orig.h" afterPath="$PROJECT_DIR$/src/TargetFinder_orig.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.ini" afterPath="$PROJECT_DIR$/config.ini" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main.cpp" afterPath="$PROJECT_DIR$/src/main.cpp" />
@@ -43,8 +44,8 @@
           <file leaf-file-name="TargetFinder_orig.cpp" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.5345017">
-                  <caret line="733" column="6" selection-start-line="733" selection-start-column="6" selection-end-line="733" selection-end-column="6" />
+                <state vertical-scroll-proportion="0.5137712">
+                  <caret line="753" column="46" selection-start-line="753" selection-start-column="46" selection-end-line="753" selection-end-column="46" />
                   <folding />
                 </state>
               </provider>
@@ -53,7 +54,7 @@
           <file leaf-file-name="TargetFinder.cpp" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="-71.129036">
+                <state vertical-scroll-proportion="-85.935486">
                   <caret line="308" column="36" selection-start-line="308" selection-start-column="26" selection-end-line="308" selection-end-column="36" />
                   <folding />
                 </state>
@@ -111,8 +112,8 @@
               <file leaf-file-name="config.ini" pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/config.ini">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state vertical-scroll-proportion="0.40175954">
-                      <caret line="36" column="11" selection-start-line="36" selection-start-column="11" selection-end-line="36" selection-end-column="11" />
+                    <state vertical-scroll-proportion="0.55131966">
+                      <caret line="48" column="17" selection-start-line="48" selection-start-column="17" selection-end-line="48" selection-end-column="17" />
                       <folding />
                     </state>
                   </provider>
@@ -150,7 +151,7 @@
                 <entry file="file://$PROJECT_DIR$/src/main.cpp">
                   <provider selected="true" editor-type-id="text-editor">
                     <state vertical-scroll-proportion="0.0">
-                      <caret line="79" column="8" selection-start-line="79" selection-start-column="8" selection-end-line="79" selection-end-column="8" />
+                      <caret line="142" column="82" selection-start-line="142" selection-start-column="82" selection-end-line="142" selection-end-column="82" />
                       <folding>
                         <element signature="e#420#439#0" expanded="true" />
                       </folding>
@@ -161,8 +162,8 @@
               <file leaf-file-name="TargetFinder_orig.h" pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.h">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state vertical-scroll-proportion="0.24070796">
-                      <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+                    <state vertical-scroll-proportion="1.2106194">
+                      <caret line="216" column="20" selection-start-line="216" selection-start-column="20" selection-end-line="216" selection-end-column="20" />
                       <folding>
                         <element signature="e#323#378#0" expanded="true" />
                       </folding>
@@ -236,10 +237,10 @@
         <option value="$PROJECT_DIR$/src/Marker.cpp" />
         <option value="$PROJECT_DIR$/src/stub.cpp" />
         <option value="$PROJECT_DIR$/src/TargetFinder.h" />
-        <option value="$PROJECT_DIR$/src/TargetFinder_orig.cpp" />
-        <option value="$PROJECT_DIR$/src/main.cpp" />
         <option value="$PROJECT_DIR$/config.ini" />
         <option value="$PROJECT_DIR$/src/TargetFinder_orig.h" />
+        <option value="$PROJECT_DIR$/src/main.cpp" />
+        <option value="$PROJECT_DIR$/src/TargetFinder_orig.cpp" />
       </list>
     </option>
   </component>
@@ -485,7 +486,13 @@
       <option name="project" value="LOCAL" />
       <updated>1437517502652</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="added ability to switch between the different tracking methods">
+      <created>1437569405586</created>
+      <option name="number" value="00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1437569405586</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -557,7 +564,8 @@
     <MESSAGE value="Replaced pretty much everything with Neal's original code (translated to C++ only minimally) plus improved pixel getting/setting, but still not working right!" />
     <MESSAGE value="Did a whole bunch of work, separated out own algorithm + original code into different programs for easier comparison. Own code looking more promising, but still not working very well." />
     <MESSAGE value="urghhhhh" />
-    <option name="LAST_COMMIT_MESSAGE" value="urghhhhh" />
+    <MESSAGE value="added ability to switch between the different tracking methods" />
+    <option name="LAST_COMMIT_MESSAGE" value="added ability to switch between the different tracking methods" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -973,16 +981,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TargetFinder.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-71.129036">
+        <state vertical-scroll-proportion="-85.935486">
           <caret line="308" column="36" selection-start-line="308" selection-start-column="26" selection-end-line="308" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5345017">
-          <caret line="733" column="6" selection-start-line="733" selection-start-column="6" selection-end-line="733" selection-end-column="6" />
           <folding />
         </state>
       </provider>
@@ -990,7 +990,7 @@
     <entry file="file://$PROJECT_DIR$/src/main.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="79" column="8" selection-start-line="79" selection-start-column="8" selection-end-line="79" selection-end-column="8" />
+          <caret line="142" column="82" selection-start-line="142" selection-start-column="82" selection-end-line="142" selection-end-column="82" />
           <folding>
             <element signature="e#420#439#0" expanded="true" />
           </folding>
@@ -999,19 +999,27 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/config.ini">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.40175954">
-          <caret line="36" column="11" selection-start-line="36" selection-start-column="11" selection-end-line="36" selection-end-column="11" />
+        <state vertical-scroll-proportion="0.55131966">
+          <caret line="48" column="17" selection-start-line="48" selection-start-column="17" selection-end-line="48" selection-end-column="17" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.24070796">
-          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+        <state vertical-scroll-proportion="1.2106194">
+          <caret line="216" column="20" selection-start-line="216" selection-start-column="20" selection-end-line="216" selection-end-column="20" />
           <folding>
             <element signature="e#323#378#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TargetFinder_orig.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5137712">
+          <caret line="753" column="46" selection-start-line="753" selection-start-column="46" selection-end-line="753" selection-end-column="46" />
+          <folding />
         </state>
       </provider>
     </entry>

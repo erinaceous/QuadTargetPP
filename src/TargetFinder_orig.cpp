@@ -266,6 +266,17 @@ bool FoundTarget::isClose(FoundMarker testMarker) {
 }
 
 
+Finder::Finder(bool set_headless) {
+    headless = set_headless;
+}
+
+
+vector<FoundTarget> Finder::doTargetRecognition(Mat *input_mat,
+                                                Mat *output_mat) {
+    return vector<FoundTarget>();
+}
+
+
 string FoundTarget::toString() {
     stringstream s;
     s << "x=" << centerx << ",y=" << centery << ",size="
@@ -687,6 +698,7 @@ void TargetFinder::markTargetCenters(Mat *mat) {
 
 vector<FoundTarget> TargetFinder::doTargetRecognition(Mat *input_mat,
                                                       Mat *output_mat) {
+    long start = getTickCount();
     final_targets.clear();
     IMDEBUG("stage0", *output_mat);
 
@@ -711,26 +723,37 @@ vector<FoundTarget> TargetFinder::doTargetRecognition(Mat *input_mat,
     }
     #endif
     IMDEBUG("stage3", *output_mat);
-
+    long end = getTickCount();
+    double ms = ((end - start) / getTickFrequency());
+    double fps = (1.0 / ms);
+    string fpstring = "fps: %0.2f";
+    putText(*output_mat, format("fps: %0.2f", fps), Point(10, 24), FONT_HERSHEY_SIMPLEX,
+            0.5, Scalar(0, 255, 255));
     return final_targets;
 }
 
 
-CascadeFinder::CascadeFinder(string cascade_xml, bool set_headless) {
+CascadeFinder::CascadeFinder(string cascade_xml, double scaleFactor,
+                             int minNeighbors, int minSize, bool set_headless) {
     this->headless = set_headless;
     this->classifier = CascadeClassifier(cascade_xml);
+    this->scaleFactor = scaleFactor;
+    this->minNeighbors = minNeighbors;
+    this->minSize = minSize;
 }
 
 
 vector<FoundTarget> CascadeFinder::doTargetRecognition(Mat *input_mat,
                                                        Mat *output_mat) {
+    long start = getTickCount();
+    this->input_mat = input_mat;
     final_targets.clear();
     markers.clear();
     vector<Rect> rects;
     // image, vector<Rect>& objects, double scaleFactor, int minNeighbors,
     // int flags=0, Size minSize, Size maxSize
     this->classifier.detectMultiScale(
-            *input_mat, rects, 2.0, 2, 0, Size(3, 3), Size(512, 512)
+            *input_mat, rects, this->scaleFactor, this->minNeighbors
     );
     for(int i=0; i<rects.size(); i++) {
         rectangle(*output_mat, rects[i], Scalar(0, 0, 255), 2);
@@ -748,5 +771,11 @@ vector<FoundTarget> CascadeFinder::doTargetRecognition(Mat *input_mat,
     markTargetCenters(output_mat);
     groupTargets();
     calculateGeometry();
+    long end = getTickCount();
+    double ms = ((end - start) / getTickFrequency());
+    double fps = (1.0 / ms);
+    string fpstring = "fps: %0.2f";
+    putText(*output_mat, format("fps: %0.2f", fps), Point(10, 24), FONT_HERSHEY_SIMPLEX,
+            0.5, Scalar(0, 255, 255));
     return this->final_targets;
 }
